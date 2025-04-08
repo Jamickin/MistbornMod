@@ -8,6 +8,7 @@ using Terraria.ID;
 using Terraria.Audio;
 using Terraria.ModLoader.IO;
 using Microsoft.Xna.Framework;
+using MistbornMod.Buffs;
 
 namespace MistbornMod
 {
@@ -19,6 +20,7 @@ namespace MistbornMod
         // Hold-type mechanic flags
         public bool IsActivelySteelPushing { get; private set; } = false;
         public bool IsActivelyIronPulling { get; private set; } = false;
+        public bool IsActivelyChromiumStripping { get; private set; } = false; // Added for Chromium
         public bool IsBurningAtium { get; set; } = false;
         
         // Flaring mechanic
@@ -26,7 +28,7 @@ namespace MistbornMod
 
         // Metal reserve constants
         public const int METAL_VIAL_AMOUNT = 3600; // 60 seconds (60 ticks per second) per vial
-        public const int MAX_METAL_RESERVE = 3600; // Max per metal type stays the same
+        // Removed the individual metal cap to allow stacking multiple vials of the same metal
         public const int MAX_TOTAL_RESERVES = METAL_VIAL_AMOUNT * 6; // Maximum of 6 vials worth of metals in total
         
         // Property to get current total reserves
@@ -53,6 +55,7 @@ namespace MistbornMod
             // Reset state flags
             IsActivelySteelPushing = false;
             IsActivelyIronPulling = false;
+            IsActivelyChromiumStripping = false;  // Initialize Chromium flag
             IsBurningAtium = false;
             IsFlaring = false;
             FlareEffectTimer = 0;
@@ -97,6 +100,7 @@ namespace MistbornMod
             
             IsActivelySteelPushing = false;
             IsActivelyIronPulling = false;
+            IsActivelyChromiumStripping = false;  // Reset Chromium flag
             IsFlaring = false;
             ShowMetalUI = true;
 
@@ -141,6 +145,14 @@ namespace MistbornMod
             if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
             if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Zinc); }
             if (MistbornMod.AtiumToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Atium); }
+            
+            // Chromium is now a hold mechanic like Iron/Steel, not a toggle
+            if (MistbornMod.ChromiumToggleHotkey?.JustPressed ?? false) { 
+                int buffId = GetBuffIDForMetal(MetalType.Chromium);
+                if (buffId != -1 && MetalReserves.GetValueOrDefault(MetalType.Chromium, 0) > 0) {
+                    SoundEngine.PlaySound(SoundID.MaxMana, Player.position);
+                }
+            }
 
             // Toggle UI visibility
             if (MistbornMod.UIToggleHotkey?.JustPressed ?? false) {
@@ -156,6 +168,7 @@ namespace MistbornMod
             // Handle Held Metal mechanics
             IsActivelySteelPushing = MistbornMod.SteelToggleHotkey?.Current ?? false;
             IsActivelyIronPulling = MistbornMod.IronToggleHotkey?.Current ?? false;
+            IsActivelyChromiumStripping = MistbornMod.ChromiumToggleHotkey?.Current ?? false;  // Handle Chromium as a held key
         }
 
         // Toggle flaring state
@@ -164,7 +177,8 @@ namespace MistbornMod
             // Check if any metals are burning before toggling
             bool anyMetalBurning = BurningMetals.Any(m => m.Value) || 
                                   IsActivelySteelPushing || 
-                                  IsActivelyIronPulling;
+                                  IsActivelyIronPulling ||
+                                  IsActivelyChromiumStripping;  // Add Chromium to check
             
             if (!anyMetalBurning) {
                 // No point flaring if no metals are burning - play fail sound
@@ -201,11 +215,11 @@ namespace MistbornMod
             }
         }
 
-        // Toggles metals like Pewter, Tin, Brass, Zinc, Atium (NOT Steel or Iron)
+        // Toggles metals like Pewter, Tin, Brass, Zinc, Atium (NOT Steel, Iron, or Chromium)
         private void ToggleMetal(MetalType metal)
         {
-            // Skip Steel and Iron as they use the hold mechanic
-            if (metal == MetalType.Steel || metal == MetalType.Iron) return;
+            // Skip Steel, Iron, and Chromium as they use the hold mechanic
+            if (metal == MetalType.Steel || metal == MetalType.Iron || metal == MetalType.Chromium) return;
 
             int buffId = GetBuffIDForMetal(metal);
             if (buffId == -1) return;
@@ -225,6 +239,18 @@ namespace MistbornMod
                 Player.AddBuff(buffId, 5); // Add buff briefly, PostUpdate will maintain
             } else { // Turned OFF
                 SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+                
+                // Call OnBuffEnd before removing the buff
+                if (Player.HasBuff(buffId))
+                {
+                    // Get the ModBuff instance
+                    ModBuff modBuff = ModContent.GetModBuff(buffId);
+                    if (modBuff is MetalBuff metalBuff)
+                    {
+                        metalBuff.OnBuffEnd(Player, this);
+                    }
+                }
+                
                 Player.ClearBuff(buffId);
             }
         }
@@ -253,10 +279,10 @@ namespace MistbornMod
             // Base consume rate - doubled when flaring
             int consumeRate = IsFlaring ? 2 : 1; 
 
-            // --- Handle Toggled Metals (NOT Steel or Iron) ---
+            // --- Handle Toggled Metals (NOT Steel, Iron, or Chromium) ---
             var metalsToCheck = BurningMetals.Keys.ToList();
             foreach (MetalType metal in metalsToCheck) {
-                if (metal == MetalType.Steel || metal == MetalType.Iron) continue; // Skip held metals
+                if (metal == MetalType.Steel || metal == MetalType.Iron || metal == MetalType.Chromium) continue; // Skip held metals
                 
                 // Don't double consume rate for Atium
                 int metalConsumeRate = (metal == MetalType.Atium) ? 1 : consumeRate;
@@ -269,7 +295,17 @@ namespace MistbornMod
                         if (MetalReserves[metal] <= 0) { // Ran out this tick
                             MetalReserves[metal] = 0;
                             BurningMetals[metal] = false; // Auto-toggle off
-                            if (buffId != -1) Player.ClearBuff(buffId);
+                            
+                            if (buffId != -1) {
+                                // Get the ModBuff instance
+                                ModBuff modBuff = ModContent.GetModBuff(buffId);
+                                if (modBuff is MetalBuff metalBuff)
+                                {
+                                    metalBuff.OnBuffEnd(Player, this);
+                                }
+                                Player.ClearBuff(buffId);
+                            }
+                            
                             SoundEngine.PlaySound(SoundID.MenuTick, Player.position); // Ran out sound
                             
                             // If we ran out and were flaring, maybe turn off flaring too
@@ -284,12 +320,28 @@ namespace MistbornMod
                     } else { // Should be burning but no reserves? Turn off.
                         BurningMetals[metal] = false;
                         int buffId = GetBuffIDForMetal(metal);
-                        if (buffId != -1 && Player.HasBuff(buffId)) Player.ClearBuff(buffId);
+                        if (buffId != -1 && Player.HasBuff(buffId)) {
+                            // Get the ModBuff instance before removing
+                            ModBuff modBuff = ModContent.GetModBuff(buffId);
+                            if (modBuff is MetalBuff metalBuff)
+                            {
+                                metalBuff.OnBuffEnd(Player, this);
+                            }
+                            Player.ClearBuff(buffId);
+                        }
                     }
                 }
                 else { // Ensure buff is removed if not burning
                     int buffId = GetBuffIDForMetal(metal);
-                    if (buffId != -1 && Player.HasBuff(buffId)) Player.ClearBuff(buffId);
+                    if (buffId != -1 && Player.HasBuff(buffId)) {
+                        // Get the ModBuff instance before removing
+                        ModBuff modBuff = ModContent.GetModBuff(buffId);
+                        if (modBuff is MetalBuff metalBuff)
+                        {
+                            metalBuff.OnBuffEnd(Player, this);
+                        }
+                        Player.ClearBuff(buffId);
+                    }
                 }
             }
 
@@ -298,6 +350,9 @@ namespace MistbornMod
             
             // --- Handle Iron (held) ---
             HandleHeldMetal(MetalType.Iron, IsActivelyIronPulling);
+            
+            // --- Handle Chromium (held) ---
+            HandleHeldMetal(MetalType.Chromium, IsActivelyChromiumStripping);
             
             // If no metals are burning, make sure flaring is turned off
             if (IsFlaring && !AnyMetalBurning()) {
@@ -310,7 +365,8 @@ namespace MistbornMod
         {
             return BurningMetals.Any(m => m.Value) || 
                   IsActivelySteelPushing || 
-                  IsActivelyIronPulling;
+                  IsActivelyIronPulling ||
+                  IsActivelyChromiumStripping;  // Add Chromium to check
         }
         
         // Helper method to handle held metal mechanics
@@ -330,7 +386,15 @@ namespace MistbornMod
                 if (MetalReserves[metal] <= 0) // Ran out this tick
                 {
                     MetalReserves[metal] = 0;
-                    if (buffId != -1) Player.ClearBuff(buffId);
+                    if (buffId != -1) {
+                        // Call OnBuffEnd before removing the buff
+                        ModBuff modBuff = ModContent.GetModBuff(buffId);
+                        if (modBuff is MetalBuff metalBuff)
+                        {
+                            metalBuff.OnBuffEnd(Player, this);
+                        }
+                        Player.ClearBuff(buffId);
+                    }
                     SoundEngine.PlaySound(SoundID.MenuTick, Player.position); // Ran out sound
                     
                     // If we ran out and were flaring, check if we need to turn off flaring
@@ -349,12 +413,19 @@ namespace MistbornMod
                 // Remove buff if not actively using
                 if (buffId != -1 && Player.HasBuff(buffId))
                 {
+                    // Call OnBuffEnd before removing the buff
+                    ModBuff modBuff = ModContent.GetModBuff(buffId);
+                    if (modBuff is MetalBuff metalBuff)
+                    {
+                        metalBuff.OnBuffEnd(Player, this);
+                    }
                     Player.ClearBuff(buffId);
                 }
             }
         }
 
-        private int GetBuffIDForMetal(MetalType metal)
+        // Make this method public so it can be called from ChromiumBuff
+        public int GetBuffIDForMetal(MetalType metal)
         {
              try {
                  switch (metal) {
@@ -365,25 +436,26 @@ namespace MistbornMod
                      case MetalType.Brass: return ModContent.BuffType<Buffs.BrassBuff>();
                      case MetalType.Zinc: return ModContent.BuffType<Buffs.ZincBuff>();
                      case MetalType.Atium: return ModContent.BuffType<Buffs.AtiumBuff>();
+                     case MetalType.Chromium: return ModContent.BuffType<Buffs.ChromiumBuff>();
                      default: return -1;
                  }
             } catch (Exception e) { Mod.Logger.Error($"Error getting Buff ID for MetalType.{metal}.", e); return -1; }
         }
 
-        // Adds reserves from a vial, capped at the maximum total and individual reserves
+        // Adds reserves from a vial, capped at the maximum total reserves
         public void DrinkMetalVial(MetalType metal, int durationValue)
         {
             int currentReserve = MetalReserves.GetValueOrDefault(metal, 0);
             int currentTotalReserves = TotalReserves;
             
-            // Calculate how much we can actually add based on both caps
-            int maxAddToThisMetal = MAX_METAL_RESERVE - currentReserve; // Cap for individual metal
+            // Calculate how much we can actually add based on total cap
+            // No longer checking against MAX_METAL_RESERVE for individual metals
             int maxAddToTotal = MAX_TOTAL_RESERVES - currentTotalReserves; // Cap for all metals combined
-            int actualAmountToAdd = Math.Min(durationValue, Math.Min(maxAddToThisMetal, maxAddToTotal));
+            int actualAmountToAdd = Math.Min(durationValue, maxAddToTotal);
             
             if (actualAmountToAdd <= 0) {
                 // Can't add any more - metal reserves full
-                Main.NewText("Your metal reserves are full!", 255, 100, 100);
+                Main.NewText("Your total metal reserves are full!", 255, 100, 100);
                 SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
                 return;
             }
@@ -396,16 +468,17 @@ namespace MistbornMod
             
             // Feedback to player
             if (actualAmountToAdd < durationValue) {
-                if (maxAddToThisMetal < maxAddToTotal) {
-                    Main.NewText($"Your {metal} reserves are getting full.", 200, 200, 100);
-                } else {
-                    Main.NewText("Your total metal reserves are nearly full.", 200, 200, 100);
-                }
+                Main.NewText("Your total metal reserves are nearly full.", 200, 200, 100);
+            }
+            else {
+                // Full amount was added - calculate how many seconds of reserve this metal now has
+                int totalSeconds = MetalReserves[metal] / 60;
+                Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
             }
 
             // Optional: Maybe flash the buff briefly on drink?
             int buffId = GetBuffIDForMetal(metal);
-            if(buffId != -1) Player.AddBuff(buffId, 2);
+            if (buffId != -1) Player.AddBuff(buffId, 2);
         }
         
         // Gets the percentage of total reserves used (0.0 to 1.0)
@@ -414,11 +487,15 @@ namespace MistbornMod
             return (float)TotalReserves / MAX_TOTAL_RESERVES;
         }
         
-        // Gets the percentage of a specific metal's reserves (0.0 to 1.0)
+        // Gets the percentage of a specific metal's reserves relative to maximum total reserves
+        // This method is updated to show a metal's reserves as a percentage of one vial
         public float GetMetalReservesPercentage(MetalType metal)
         {
             int reserve = MetalReserves.GetValueOrDefault(metal, 0);
-            return (float)reserve / MAX_METAL_RESERVE;
+            
+            // Calculate what percentage of one vial this represents
+            // If reserve > METAL_VIAL_AMOUNT, percentage will be > 1.0
+            return (float)reserve / METAL_VIAL_AMOUNT;
         }
     }
 }

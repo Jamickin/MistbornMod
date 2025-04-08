@@ -102,26 +102,32 @@ namespace MistbornMod.Buffs
                 {
                     if (!WorldGen.InWorld(x, y, 1)) continue;
                     Tile tile = Main.tile[x, y];
-                    if (tile != null && tile.HasTile && IsMetallicOre(tile.TileType))
+                    if (tile != null && tile.HasTile)
                     {
-                        Vector2 tileWorldPos = new Vector2(x * 16f + 8f, y * 16f + 8f);
-                        float distToTile = Vector2.Distance(player.Center, tileWorldPos);
+                        // Check if this tile is a valid metallic ore or object
+                        bool isMetallic = IsMetallicOre(tile.TileType) || IsMetallicObject(tile.TileType);
                         
-                        if (distToTile < ScanRange)
+                        if (isMetallic)
                         {
-                            // More dust when flaring
-                            if (Main.rand.NextBool(modPlayer.IsFlaring ? 5 : 8))
-                            {
-                                Dust.NewDust(new Vector2(x * 16f, y * 16f), 16, 16, LineDustType, 0f, 0f, 150, default, modPlayer.IsFlaring ? 0.7f : 0.5f);
-                            }
+                            Vector2 tileWorldPos = new Vector2(x * 16f + 8f, y * 16f + 8f);
+                            float distToTile = Vector2.Distance(player.Center, tileWorldPos);
                             
-                            // Check if this tile is closest to mouse cursor
-                            float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldPos);
-                            if (distSq < closestDistSq && distToTile < PullRange)
+                            if (distToTile < ScanRange)
                             {
-                                closestDistSq = distSq;
-                                closestTargetEntity = null;
-                                closestTilePos = tileWorldPos;
+                                // More dust when flaring
+                                if (Main.rand.NextBool(modPlayer.IsFlaring ? 5 : 8))
+                                {
+                                    Dust.NewDust(new Vector2(x * 16f, y * 16f), 16, 16, LineDustType, 0f, 0f, 150, default, modPlayer.IsFlaring ? 0.7f : 0.5f);
+                                }
+                                
+                                // Check if this tile is closest to mouse cursor
+                                float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldPos);
+                                if (distSq < closestDistSq && distToTile < PullRange)
+                                {
+                                    closestDistSq = distSq;
+                                    closestTargetEntity = null;
+                                    closestTilePos = tileWorldPos;
+                                }
                             }
                         }
                     }
@@ -202,7 +208,8 @@ namespace MistbornMod.Buffs
                                        sampleItem.createTile == TileID.SilverBrick ||
                                        sampleItem.createTile == TileID.TungstenBrick ||
                                        sampleItem.createTile == TileID.GoldBrick ||
-                                       sampleItem.createTile == TileID.PlatinumBrick);
+                                       sampleItem.createTile == TileID.PlatinumBrick ||
+                                       sampleItem.createTile == TileID.Anvils);
             if (placesMetallicTile) return true;
             bool isKnownMetallic = itemType == ItemID.IronBar ||
                                    itemType == ItemID.LeadBar ||
@@ -244,7 +251,34 @@ namespace MistbornMod.Buffs
                    tileType == TileID.Gold ||
                    tileType == TileID.Platinum ||
                    tileType == ModContent.TileType<Tiles.ZincOreTile>();
-        } 
+        }
+        
+        private bool IsMetallicObject(int tileType)
+        {
+            // Check for various metal objects
+            return tileType == TileID.MetalBars ||           // Metal bars
+                   tileType == TileID.Anvils ||              // Anvils (regular)
+                   tileType == TileID.MythrilAnvil ||        // Mythril anvil
+                   tileType == TileID.AdamantiteForge ||     // Adamantite forge
+                   tileType == TileID.Furnaces ||            // Furnaces
+                   tileType == TileID.Hellforge ||           // Hellforge
+                   tileType == TileID.Chain ||               // Chains
+                   tileType == TileID.Bathtubs ||            // Bathtubs
+                   tileType == TileID.Chandeliers ||         // Chandeliers
+                   tileType == TileID.Cannon ||              // Cannons
+                   tileType == TileID.LandMine ||            // Land mines
+                   tileType == TileID.Traps ||               // Traps
+                   tileType == TileID.Boulder ||             // Boulders
+                   tileType == TileID.IronBrick ||           // Iron bricks
+                   tileType == TileID.LeadBrick ||           // Lead bricks
+                   tileType == TileID.CopperBrick ||         // Copper bricks
+                   tileType == TileID.TinBrick ||            // Tin bricks
+                   tileType == TileID.SilverBrick ||         // Silver bricks
+                   tileType == TileID.TungstenBrick ||       // Tungsten bricks
+                   tileType == TileID.GoldBrick ||           // Gold bricks
+                   tileType == TileID.PlatinumBrick ||       // Platinum bricks
+                   tileType == TileID.AlchemyTable;          // Alchemy table
+        }
 
         private void DrawLineWithDust(Vector2 start, Vector2 end, int dustType, float density = 0.1f)
         {

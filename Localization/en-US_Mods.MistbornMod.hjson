@@ -33,6 +33,11 @@ Buffs: {
 		DisplayName: Atium Ecstacy
 		Description: You are untouchable!
 	}
+
+	ChromiumBuff: {
+		DisplayName: Chromium Leech
+		Description: Strips away all your other metal reserves! [c/00DDFF:For Testing]
+	}
 }
 
 Items: {
@@ -71,6 +76,11 @@ Items: {
 		Tooltip: A small vial with liquid and some metal shavings
 	}
 
+	ChromiumVial: {
+		DisplayName: Chromium Vial
+		Tooltip: "[c/00DDFF:Testing Item] Strips away ALL your metal reserves when burned"
+	}
+
 	ZincOre: {
 		DisplayName: Zinc Ore
 		Tooltip: A Shiny ore used in Allomantic brewing
@@ -85,6 +95,7 @@ Keybinds: {
 	"Burn Brass.DisplayName": Burn Brass
 	"Burn Zinc.DisplayName": Burn Zinc
 	"Burn Atium.DisplayName": Burn Atium
+	"Burn Chromium.DisplayName": Test: Empty Reserves
 	"Flare Metals.DisplayName": Flare Metals (Double Power/Consumption)
 	"Toggle Metal UI.DisplayName": Toggle Metal Reserves UI
 }

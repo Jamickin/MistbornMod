@@ -16,12 +16,12 @@ namespace MistbornMod.UI
     internal class MetalReservesUI : UIState
     {
         // Constants for UI layout
-        private const float PANEL_WIDTH = 200f;
-        private const float PANEL_HEIGHT = 280f;
+        private const float PANEL_WIDTH = 240f;  // Increased width to prevent text overlap
+        private const float BASE_PANEL_HEIGHT = 150f; // Base height, will be adjusted dynamically
         private const float BAR_HEIGHT = 16f;
         private const float ICON_SIZE = 24f;
-        private const float SPACING = 4f;
-        private const float PADDING = 10f;
+        private const float SPACING = 6f;  // Increased spacing
+        private const float PADDING = 12f;  // Increased padding
         
         // UI position
         private Vector2 _position = new Vector2(20, 260); // Default position
@@ -35,26 +35,8 @@ namespace MistbornMod.UI
 
         public override void OnInitialize()
         {
-            // Initialize list of metals to display
+            // Initialize the list, but we'll filter it in the Draw method
             _metalTypesToDisplay = new List<MetalType>();
-            
-            // Order of metals in UI - we'll display them in this order
-            foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
-            {
-                // Only add implemented metals
-                switch (metal)
-                {
-                    case MetalType.Iron:
-                    case MetalType.Steel:
-                    case MetalType.Tin:
-                    case MetalType.Pewter:
-                    case MetalType.Brass:
-                    case MetalType.Zinc:
-                    case MetalType.Atium:
-                        _metalTypesToDisplay.Add(metal);
-                        break;
-                }
-            }
         }
         
         public override void Update(GameTime gameTime)
@@ -68,7 +50,7 @@ namespace MistbornMod.UI
                 
                 // Ensure the UI stays within screen bounds
                 _position.X = Math.Clamp(_position.X, 0, Main.screenWidth - PANEL_WIDTH);
-                _position.Y = Math.Clamp(_position.Y, 0, Main.screenHeight - PANEL_HEIGHT);
+                _position.Y = Math.Clamp(_position.Y, 0, Main.screenHeight - CalculatePanelHeight());
                 
                 // Stop dragging if mouse released
                 if (!Main.mouseLeft)
@@ -78,12 +60,69 @@ namespace MistbornMod.UI
             }
         }
 
+        // Calculate the actual height needed for the panel based on content
+        private float CalculatePanelHeight()
+        {
+            // Get the MistbornPlayer instance
+            MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+            
+            // Start with base height for header and total reserves section
+            float height = BASE_PANEL_HEIGHT;
+            
+            // Update the list with only metals that have reserves
+            _metalTypesToDisplay.Clear();
+            foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
+            {
+                // Only show metals that have some reserves and aren't Chromium
+                if (metal != MetalType.Chromium && modPlayer.MetalReserves.TryGetValue(metal, out int reserve) && reserve > 0)
+                {
+                    _metalTypesToDisplay.Add(metal);
+                }
+            }
+            
+            // Add height for each metal's display
+            foreach (MetalType metal in _metalTypesToDisplay)
+            {
+                float metalPercentage = modPlayer.GetMetalReservesPercentage(metal);
+                int visualBarsNeeded = Math.Min((int)Math.Ceiling(metalPercentage), 5);
+                visualBarsNeeded = Math.Max(1, visualBarsNeeded); // Always at least one bar
+                
+                // Height for icon, bars, and spacing
+                height += ICON_SIZE + (visualBarsNeeded * (BAR_HEIGHT + SPACING)) + SPACING * 2;
+            }
+            
+            // Add extra padding at the bottom
+            height += PADDING;
+            
+            return height;
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             base.Draw(spriteBatch);
             
             // Get the MistbornPlayer instance
             MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+            
+            // Update the list with only metals that have reserves
+            _metalTypesToDisplay.Clear();
+            foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
+            {
+                // Only show metals that have some reserves and aren't Chromium
+                if (metal != MetalType.Chromium && modPlayer.MetalReserves.TryGetValue(metal, out int reserve) && reserve > 0)
+                {
+                    _metalTypesToDisplay.Add(metal);
+                }
+            }
+            
+            // Don't draw anything if no metals have reserves
+            if (_metalTypesToDisplay.Count == 0)
+            {
+                return;
+            }
+            
+            // Calculate the actual panel height needed
+            float panelHeight = CalculatePanelHeight();
             
             // Calculate the header area for dragging
             Rectangle headerArea = new Rectangle(
@@ -104,14 +143,14 @@ namespace MistbornMod.UI
             Texture2D backgroundTexture = MistbornUISystem.MetalUIBackground.Value;
             if (backgroundTexture != null)
             {
-                // Draw a 9-slice panel
+                // Draw a 9-slice panel with the calculated height
                 Utils.DrawSplicedPanel(
                     spriteBatch,
                     backgroundTexture,
                     (int)_position.X,
                     (int)_position.Y,
                     (int)PANEL_WIDTH,
-                    (int)PANEL_HEIGHT,
+                    (int)panelHeight,
                     10, 10, 10, 10,
                     Color.White
                 );
@@ -121,7 +160,7 @@ namespace MistbornMod.UI
                 // Fallback: draw colored rectangle if texture is missing
                 spriteBatch.Draw(
                     TextureAssets.MagicPixel.Value,
-                    new Rectangle((int)_position.X, (int)_position.Y, (int)PANEL_WIDTH, (int)PANEL_HEIGHT),
+                    new Rectangle((int)_position.X, (int)_position.Y, (int)PANEL_WIDTH, (int)panelHeight),
                     null,
                     new Color(75, 75, 75, 230),
                     0f,
@@ -232,7 +271,16 @@ namespace MistbornMod.UI
                 
                 // Draw metal reserve as seconds
                 int secondsLeft = modPlayer.MetalReserves.TryGetValue(metal, out int reserves) ? reserves / 60 : 0;
-                string timeText = $"{secondsLeft}s";
+                
+                // Calculate the number of full vials this represents
+                int fullVials = secondsLeft / 60;
+                int partialSeconds = secondsLeft % 60;
+                
+                // Format the time differently if we have multiple vials
+                string timeText = fullVials > 0 
+                    ? $"{fullVials}v {partialSeconds}s" // Shortened format to prevent text overlap
+                    : $"{secondsLeft}s";
+                
                 Vector2 timeSize = FontAssets.ItemStack.Value.MeasureString(timeText);
                 Utils.DrawBorderString(
                     spriteBatch,
@@ -242,19 +290,59 @@ namespace MistbornMod.UI
                     0.8f
                 );
                 
-                // Draw metal reserve bar
-                DrawProgressBar(
-                    spriteBatch,
-                    new Vector2(_position.X + PADDING, currentY + ICON_SIZE + SPACING / 2),
-                    PANEL_WIDTH - PADDING * 2,
-                    BAR_HEIGHT,
-                    metalPercentage,
-                    metalColor,
-                    new Color(20, 20, 20)
-                );
+                // Compute the number of bars to display with proper spacing
+                int maxVisualizableVials = 5;
+                int visualBarsNeeded = Math.Min((int)Math.Ceiling(metalPercentage), maxVisualizableVials);
+                visualBarsNeeded = Math.Max(1, visualBarsNeeded); // Always at least one bar
                 
-                // Advance Y position for next metal
-                currentY += ICON_SIZE + BAR_HEIGHT + SPACING * 2;
+                // Update the starting position for the first bar
+                float barY = currentY + ICON_SIZE + SPACING;
+                
+                // Draw metal reserve bars - one per vial with proper spacing
+                for (int i = 0; i < maxVisualizableVials; i++) 
+                {
+                    // Only draw bars we need (with at least one)
+                    if (i < visualBarsNeeded || i == 0) 
+                    {
+                        float fillAmount;
+                        
+                        if (i == visualBarsNeeded - 1 && metalPercentage % 1 > 0) 
+                        {
+                            // Last bar with partial fill
+                            fillAmount = metalPercentage % 1;
+                        }
+                        else if (i < visualBarsNeeded) 
+                        {
+                            // Full bars
+                            fillAmount = 1f;
+                        }
+                        else 
+                        {
+                            // Empty placeholder bars  
+                            fillAmount = 0f;
+                        }
+                        
+                        // Adjust height based on if this is an active or inactive bar
+                        float barHeight = (i < visualBarsNeeded) ? BAR_HEIGHT : BAR_HEIGHT / 2;
+                        
+                        // Draw the bar
+                        DrawProgressBar(
+                            spriteBatch,
+                            new Vector2(_position.X + PADDING, barY),
+                            PANEL_WIDTH - PADDING * 2,
+                            barHeight,
+                            fillAmount,
+                            (i < visualBarsNeeded) ? metalColor : new Color(metalColor.R / 2, metalColor.G / 2, metalColor.B / 2, 100),
+                            new Color(20, 20, 20)
+                        );
+                        
+                        // Move to the next bar position with proper spacing
+                        barY += barHeight + SPACING;
+                    }
+                }
+                
+                // Update the Y position for the next metal, considering all the bars we displayed
+                currentY = barY + SPACING;
             }
         }
         

@@ -20,11 +20,24 @@ namespace MistbornMod.Buffs
             // Show metal reserves
             if (modPlayer != null && modPlayer.MetalReserves.TryGetValue(this.Metal, out int reserves))
             {
+                // Format time based on how many full vials worth we have
                 double secondsLeft = reserves / 60.0;
-                string timeLeftFormatted = secondsLeft.ToString("F1"); 
+                int fullVials = (int)(secondsLeft / 60);
+                int partialSeconds = (int)(secondsLeft % 60);
+                
+                // Format differently based on how many vials worth we have
+                string timeLeftFormatted;
+                if (fullVials > 0)
+                {
+                    timeLeftFormatted = $"{fullVials} vial{(fullVials > 1 ? "s" : "")} {partialSeconds}s";
+                }
+                else
+                {
+                    timeLeftFormatted = secondsLeft.ToString("F1") + "s"; 
+                }
                 
                 // Base tip with metal reserves
-                tip += $"\nReserves: {timeLeftFormatted}s"; 
+                tip += $"\nReserves: {timeLeftFormatted}"; 
                 
                 // Add flaring status indicator if flaring
                 if (modPlayer.IsFlaring && Metal != MetalType.Atium)
@@ -38,6 +51,13 @@ namespace MistbornMod.Buffs
             {
                  tip += "\nReserves: N/A";
             }
+        }
+        
+        // Virtual method that can be overridden by specific metal buffs
+        // Called when a buff is removed
+        public virtual void OnBuffEnd(Player player, MistbornPlayer modPlayer)
+        {
+            // Default implementation does nothing
         }
     }
 }

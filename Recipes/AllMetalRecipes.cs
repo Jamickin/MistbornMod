@@ -82,8 +82,12 @@ namespace MistbornMod.Recipes
             zincVialRecipe.AddTile(TileID.Bottles);
             zincVialRecipe.Register();
 
-            // --- Add recipes for other metals like Copper, Bronze, Aluminum, etc. if needed ---
-        }
+            Recipe chromiumVialRecipe = Recipe.Create(ModContent.ItemType<ChromiumVial>());
+            chromiumVialRecipe.AddIngredient(ItemID.BottledWater);
+            // Require simple ingredients for testing
+            chromiumVialRecipe.AddIngredient(ItemID.Diamond, 1); // Requires a diamond for testing
+            chromiumVialRecipe.AddTile(TileID.Bottles);
+            chromiumVialRecipe.Register();        }
     }
 }
 

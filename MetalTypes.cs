@@ -11,6 +11,8 @@ namespace MistbornMod
         Brass,      
         Copper,    
         Bronze,
-        Atium      
+        Atium,
+        Chromium    // Added Chromium as a new metal type
+
     }
 }

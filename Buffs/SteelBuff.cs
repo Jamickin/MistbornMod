@@ -2,6 +2,8 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 namespace MistbornMod.Buffs
 {
     public class SteelBuff : MetalBuff
@@ -11,7 +13,16 @@ namespace MistbornMod.Buffs
         private const int PushDustType = DustID.Smoke;
         private const float PlayerPushForce = 7.5f; // Base force
         private const float MaxPlayerPushSpeedSq = 12f * 12f; // Base max speed squared
+        
+        // Item damage configuration
+        private const float ItemDamageBase = 8f; // Base damage for pushing an item into an NPC
+        private const float ItemDamageVelocityMultiplier = 1.5f; // Damage multiplier based on item velocity
+        private const int ItemDamageCooldown = 15; // Cooldown in ticks before the same item can damage again
+        
         private int playerPushCooldown = 0;
+        
+        // Dictionary to track item damage cooldowns
+        private Dictionary<int, int> itemDamageCooldowns = new Dictionary<int, int>();
         
         public override void SetStaticDefaults()
         {
@@ -32,6 +43,26 @@ namespace MistbornMod.Buffs
             
             if (playerPushCooldown > 0) {
                 playerPushCooldown--;
+            }
+            
+            // Update item damage cooldowns
+            List<int> keysToRemove = new List<int>();
+            foreach (var kvp in itemDamageCooldowns)
+            {
+                int cooldown = kvp.Value - 1;
+                if (cooldown <= 0)
+                {
+                    keysToRemove.Add(kvp.Key);
+                }
+                else
+                {
+                    itemDamageCooldowns[kvp.Key] = cooldown;
+                }
+            }
+            
+            foreach (int key in keysToRemove)
+            {
+                itemDamageCooldowns.Remove(key);
             }
             
             Vector2 mouseWorld = Main.MouseWorld;
@@ -82,15 +113,21 @@ namespace MistbornMod.Buffs
                 {
                     if (!WorldGen.InWorld(x, y, 1)) continue;
                     Tile tile = Main.tile[x, y];
-                    if (tile != null && tile.HasTile && IsMetallicOre(tile.TileType))
+                    if (tile != null && tile.HasTile)
                     {
-                        Vector2 tileWorldCenter = new Vector2(x * 16f + 8f, y * 16f + 8f);
-                        float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldCenter);
-                        if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, tileWorldCenter) < PushRange * PushRange)
+                        // Check for both ores and metallic objects like anvils, metal bars, etc.
+                        bool isMetallic = IsMetallicOre(tile.TileType) || IsMetallicObject(tile.TileType);
+                        
+                        if (isMetallic)
                         {
-                            closestDistSq = distSq;
-                            closestTargetEntity = null;
-                            closestTilePos = tileWorldCenter;
+                            Vector2 tileWorldCenter = new Vector2(x * 16f + 8f, y * 16f + 8f);
+                            float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldCenter);
+                            if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, tileWorldCenter) < PushRange * PushRange)
+                            {
+                                closestDistSq = distSq;
+                                closestTargetEntity = null;
+                                closestTilePos = tileWorldCenter;
+                            }
                         }
                     }
                 }
@@ -112,7 +149,17 @@ namespace MistbornMod.Buffs
                     {
                         pushDirection.Normalize();
                         if (closestTargetEntity is Item targetItem) {
+                             // Store the previous item velocity for damage calculation
+                             Vector2 prevVelocity = targetItem.velocity;
+                             
+                             // Apply push force
                              targetItem.velocity += pushDirection * currentPushForce * 0.8f;
+                             
+                             // Check for collisions with NPCs to deal damage
+                             if (targetItem.velocity.LengthSquared() > 4f) // Only check fast-moving items
+                             {
+                                 HandleItemCollisionsWithNPCs(targetItem, player, modPlayer.IsFlaring);
+                             }
                         } else if (closestTargetEntity is NPC targetNPC) {
                              targetNPC.velocity += pushDirection * currentPushForce * (1f - targetNPC.knockBackResist) * 1.2f;
                         }
@@ -167,12 +214,103 @@ namespace MistbornMod.Buffs
             }
         } 
         
+        private void HandleItemCollisionsWithNPCs(Item item, Player player, bool isFlaring)
+        {
+            // Skip if the item is on cooldown
+            if (itemDamageCooldowns.ContainsKey(item.whoAmI))
+            {
+                return;
+            }
+            
+            // Calculate item collision box
+            Rectangle itemHitbox = new Rectangle(
+                (int)(item.position.X),
+                (int)(item.position.Y),
+                item.width,
+                item.height
+            );
+            
+            // Check for collisions with NPCs
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (npc.active && !npc.friendly && npc.CanBeChasedBy())
+                {
+                    // Calculate NPC collision box
+                    Rectangle npcHitbox = new Rectangle(
+                        (int)(npc.position.X),
+                        (int)(npc.position.Y),
+                        npc.width,
+                        npc.height
+                    );
+                    
+                    // Check for intersection
+                    if (itemHitbox.Intersects(npcHitbox))
+                    {
+                        // Calculate damage based on item velocity and weight
+                        float itemSpeed = item.velocity.Length();
+                        float itemWeight = item.value * 0.0002f + 1f; // Use item value as an approximation of mass/importance
+                        float baseDamage = ItemDamageBase * (isFlaring ? 2f : 1f);
+                        
+                        // Calculate final damage
+                        int damage = (int)(baseDamage + (itemSpeed * ItemDamageVelocityMultiplier * itemWeight));
+                        damage = System.Math.Min(damage, isFlaring ? 60 : 30); // Cap damage to prevent extreme values
+                        
+                        // Apply damage to the NPC - using HitInfo struct for newer tModLoader versions
+                        int hitDirection = item.position.X < npc.position.X ? 1 : -1;
+                        bool crit = Main.rand.NextBool(10); // 10% chance for critical hit
+                        
+                        // Create a HitInfo struct for newer tModLoader versions
+                        var hitInfo = new NPC.HitInfo
+                        {
+                            Damage = damage,
+                            Knockback = 8f,
+                            HitDirection = hitDirection,
+                            Crit = crit
+                        };
+                        
+                        // Apply the damage
+                        npc.StrikeNPC(hitInfo);
+                        
+                        // Visual effect
+                        for (int d = 0; d < 8; d++)
+                        {
+                            Dust.NewDust(npc.position, npc.width, npc.height, DustID.Iron, 
+                                item.velocity.X * 0.2f, item.velocity.Y * 0.2f, 100, default, isFlaring ? 1.5f : 1f);
+                        }
+                        
+                        // Set cooldown for this item to prevent rapid hits
+                        itemDamageCooldowns[item.whoAmI] = ItemDamageCooldown;
+                        
+                        // Bounce the item away a bit to avoid getting stuck
+                        item.velocity = -item.velocity * 0.3f;
+                        
+                        // Break out of the loop after hitting one NPC
+                        break;
+                    }
+                }
+            }
+        }
+        
         private bool IsMetallicNPC(NPC npc) {
              bool wearsArmor = npc.defense > 10;
              bool isSpecificType = npc.type == NPCID.Probe || 
                                    npc.type == NPCID.ArmoredSkeleton || 
                                    npc.type == NPCID.PossessedArmor || 
-                                   npc.type == NPCID.MeteorHead;
+                                   npc.type == NPCID.MeteorHead ||
+                                   npc.type == NPCID.Golem ||
+                                   npc.type == NPCID.GolemHead ||
+                                   npc.type == NPCID.GolemFistLeft ||
+                                   npc.type == NPCID.GolemFistRight ||
+                                   npc.type == NPCID.SkeletronPrime ||
+                                   npc.type == NPCID.PrimeCannon ||
+                                   npc.type == NPCID.PrimeSaw ||
+                                   npc.type == NPCID.PrimeVice ||
+                                   npc.type == NPCID.PrimeLaser ||
+                                   npc.type == NPCID.TheDestroyer ||
+                                   npc.type == NPCID.TheDestroyerBody ||
+                                   npc.type == NPCID.TheDestroyerTail ||
+                                   npc.type == NPCID.Mimic;
              return wearsArmor || isSpecificType;
         }
         
@@ -187,7 +325,8 @@ namespace MistbornMod.Buffs
                                        sampleItem.createTile == TileID.SilverBrick || 
                                        sampleItem.createTile == TileID.TungstenBrick || 
                                        sampleItem.createTile == TileID.GoldBrick || 
-                                       sampleItem.createTile == TileID.PlatinumBrick);
+                                       sampleItem.createTile == TileID.PlatinumBrick ||
+                                       sampleItem.createTile == TileID.Anvils);
              if (placesMetallicTile) return true;
              
              bool isKnownMetallic = itemType == ItemID.IronBar || 
@@ -204,8 +343,7 @@ namespace MistbornMod.Buffs
                                    itemType == ItemID.Hook || 
                                    itemType == ItemID.Wire || 
                                    itemType == ItemID.Minecart || 
-                                   itemType == ItemID.EmptyBucket || 
-                                   itemType == ItemID.MetalSink;
+                                   itemType == ItemID.EmptyBucket;
              if (isKnownMetallic) return true;
              
              bool isMetallicTool = (sampleItem.pick > 0) || 
@@ -236,6 +374,32 @@ namespace MistbornMod.Buffs
                    tileType == TileID.Gold || 
                    tileType == TileID.Platinum ||
                    tileType == ModContent.TileType<Tiles.ZincOreTile>();
+        }
+        
+        private bool IsMetallicObject(int tileType) {
+            // Check for various metal objects
+            return tileType == TileID.MetalBars ||           // Metal bars
+                   tileType == TileID.Anvils ||              // Anvils (regular)
+                   tileType == TileID.MythrilAnvil ||        // Mythril anvil
+                   tileType == TileID.AdamantiteForge ||     // Adamantite forge
+                   tileType == TileID.Furnaces ||            // Furnaces
+                   tileType == TileID.Hellforge ||           // Hellforge
+                   tileType == TileID.Chain ||               // Chains
+                   tileType == TileID.Bathtubs ||            // Bathtubs
+                   tileType == TileID.Chandeliers ||         // Chandeliers
+                   tileType == TileID.Cannon ||              // Cannons
+                   tileType == TileID.LandMine ||            // Land mines
+                   tileType == TileID.Traps ||               // Traps
+                   tileType == TileID.Boulder ||             // Boulders
+                   tileType == TileID.IronBrick ||           // Iron bricks
+                   tileType == TileID.LeadBrick ||           // Lead bricks
+                   tileType == TileID.CopperBrick ||         // Copper bricks
+                   tileType == TileID.TinBrick ||            // Tin bricks
+                   tileType == TileID.SilverBrick ||         // Silver bricks
+                   tileType == TileID.TungstenBrick ||       // Tungsten bricks
+                   tileType == TileID.GoldBrick ||           // Gold bricks
+                   tileType == TileID.PlatinumBrick ||       // Platinum bricks
+                   tileType == TileID.AlchemyTable;          // Alchemy table
         }
         
         private void DrawLineWithDust(Vector2 start, Vector2 end, int dustType, float density = 0.1f) {
