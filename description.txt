@@ -1,1 +1,17 @@
-This is a Mistborn themed modasssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+The Mistborn Mod brings Allomancy from Brandon Sanderson's Mistborn series to Terraria!
+
+Drink metal vials and burn metals to gain powerful abilities:
+- Iron: Pull on metal objects or pull yourself to metal anchors (Hold key)
+- Steel: Push on metal objects or push yourself away from metal anchors (Hold key)
+- Tin: Enhanced senses with night vision and danger detection
+- Pewter: Increased physical abilities including strength, defense, and speed
+- Zinc: Riot the emotions of nearby enemies, making them more vulnerable
+- Brass: Soothe the emotions of nearby enemies, making them less aggressive
+- Atium: Become temporarily invulnerable (extremely rare)
+
+FLARING: Press [LeftAlt] when burning metals to increase their power! 
+Flaring doubles the effectiveness of all metals but also doubles consumption rate.
+
+Find metal vials and create your own at alchemy stations. Discover metallic ores in the world to brew new allomantic metals.
+
+Survive, fight, and navigate like a true Mistborn!

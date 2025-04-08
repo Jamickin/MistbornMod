@@ -7,10 +7,10 @@ namespace MistbornMod.Buffs
     public class SteelBuff : MetalBuff
     {
         private const float PushRange = 320f; // 20 tiles
-        private const float PushForce = 5f; // Increased from 4f for smoother pushing
+        private const float PushForce = 5f; // Base pushing force
         private const int PushDustType = DustID.Smoke;
-        private const float PlayerPushForce = 7.5f; // Increased from 6f
-        private const float MaxPlayerPushSpeedSq = 12f * 12f; // Increased max speed for better mobility
+        private const float PlayerPushForce = 7.5f; // Base force
+        private const float MaxPlayerPushSpeedSq = 12f * 12f; // Base max speed squared
         private int playerPushCooldown = 0;
         
         public override void SetStaticDefaults()
@@ -21,6 +21,15 @@ namespace MistbornMod.Buffs
         
         public override void Update(Player player, ref int buffIndex)
         {
+            // Get the MistbornPlayer instance to check flaring status
+            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+            float multiplier = modPlayer.IsFlaring ? 2.0f : 1.0f;
+            
+            // Calculate dynamic values based on flaring status
+            float currentPushForce = PushForce * multiplier;
+            float currentPlayerPushForce = PlayerPushForce * multiplier;
+            float currentMaxSpeedSq = MaxPlayerPushSpeedSq * multiplier;
+            
             if (playerPushCooldown > 0) {
                 playerPushCooldown--;
             }
@@ -88,13 +97,12 @@ namespace MistbornMod.Buffs
             }
 
             // Draw lines and apply forces to the closest target
-            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
             bool isActivelySteelPushing = modPlayer.IsActivelySteelPushing;
             
             if (closestTargetEntity != null) 
             {
-                // Always draw the line to show connection
-                DrawLineWithDust(player.Center, closestTargetEntity.Center, PushDustType, 0.15f);
+                // Always draw the line to show connection - thicker when flaring
+                DrawLineWithDust(player.Center, closestTargetEntity.Center, PushDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
                 
                 // Apply push force to entities if actively pushing
                 if (isActivelySteelPushing)
@@ -104,17 +112,17 @@ namespace MistbornMod.Buffs
                     {
                         pushDirection.Normalize();
                         if (closestTargetEntity is Item targetItem) {
-                             targetItem.velocity += pushDirection * PushForce * 0.8f;
+                             targetItem.velocity += pushDirection * currentPushForce * 0.8f;
                         } else if (closestTargetEntity is NPC targetNPC) {
-                             targetNPC.velocity += pushDirection * PushForce * (1f - targetNPC.knockBackResist) * 1.2f;
+                             targetNPC.velocity += pushDirection * currentPushForce * (1f - targetNPC.knockBackResist) * 1.2f;
                         }
                     }
                 }
             }
             else if (closestTilePos.HasValue)
             {
-                // Always draw the line to show connection
-                DrawLineWithDust(player.Center, closestTilePos.Value, PushDustType, 0.15f);
+                // Always draw the line to show connection - thicker when flaring
+                DrawLineWithDust(player.Center, closestTilePos.Value, PushDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
                 
                 // Apply force to player if actively pushing against tiles
                 if (isActivelySteelPushing && playerPushCooldown <= 0)
@@ -125,12 +133,12 @@ namespace MistbornMod.Buffs
                         
                         // If player is falling, allow more frequent pushes for better control
                         bool isFalling = player.velocity.Y > 0;
-                        int cooldownValue = isFalling ? 5 : 10;
+                        int cooldownValue = isFalling ? (modPlayer.IsFlaring ? 3 : 5) : (modPlayer.IsFlaring ? 6 : 10);
                         
-                        if (player.velocity.LengthSquared() < MaxPlayerPushSpeedSq) {
+                        if (player.velocity.LengthSquared() < currentMaxSpeedSq) {
                             // Apply stronger push force when falling for better recovery
                             float pushMultiplier = isFalling ? 1.5f : 1.0f;
-                            player.velocity += pushDirection * PlayerPushForce * pushMultiplier;
+                            player.velocity += pushDirection * currentPlayerPushForce * pushMultiplier;
                             playerPushCooldown = cooldownValue;
                             
                             // Cancel fall damage if just pushed
@@ -140,11 +148,17 @@ namespace MistbornMod.Buffs
                 }
             }
             
-            // Add ambient dust around player when ability is active
-            if (isActivelySteelPushing && Main.rand.NextBool(5))
+            // Add ambient dust around player when ability is active - more intense when flaring
+            if (isActivelySteelPushing) 
             {
-                Vector2 dustVel = Main.rand.NextVector2CircularEdge(1.5f, 1.5f);
-                Dust.NewDustPerfect(player.Center, PushDustType, dustVel, 150, default, 0.8f);
+                int dustChance = modPlayer.IsFlaring ? 3 : 5;
+                float dustScale = modPlayer.IsFlaring ? 1.8f : 1.5f;
+                
+                if (Main.rand.NextBool(dustChance))
+                {
+                    Vector2 dustVel = Main.rand.NextVector2CircularEdge(dustScale, dustScale);
+                    Dust.NewDustPerfect(player.Center, PushDustType, dustVel, 150, default, modPlayer.IsFlaring ? 1.0f : 0.8f);
+                }
             }
             else if (Main.rand.NextBool(10))
             {
@@ -235,14 +249,18 @@ namespace MistbornMod.Buffs
              int steps = (int)(distance * density);
              if (steps <= 0) return;
              
+             // Get the player's flaring status for dust intensity
+             MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+             bool isFlaring = modPlayer?.IsFlaring ?? false;
+             
              for (int i = 1; i <= steps; i++) {
                  float progress = (float)i / steps;
                  Vector2 dustPos = start + direction * distance * progress;
-                 if(Main.rand.NextBool(3)) {
-                      Dust dust = Dust.NewDustPerfect(dustPos, dustType, Vector2.Zero, 150, default, 0.5f);
+                 if(Main.rand.NextBool(isFlaring ? 2 : 3)) {
+                      Dust dust = Dust.NewDustPerfect(dustPos, dustType, Vector2.Zero, 150, default, isFlaring ? 0.6f : 0.5f);
                       dust.noGravity = true;
                       dust.velocity *= 0.1f;
-                      dust.fadeIn = 0.6f;
+                      dust.fadeIn = isFlaring ? 0.8f : 0.6f;
                  }
              }
         }

@@ -85,4 +85,14 @@ Keybinds: {
 	"Burn Brass.DisplayName": Burn Brass
 	"Burn Zinc.DisplayName": Burn Zinc
 	"Burn Atium.DisplayName": Burn Atium
+	"Flare Metals.DisplayName": Flare Metals (Double Power/Consumption)
+	"Toggle Metal UI.DisplayName": Toggle Metal Reserves UI
+}
+
+UI: {
+	MetalReserves: {
+		Title: Metal Reserves
+		TotalCapacity: Total Capacity
+		VialsUsed: Vials Used: {0}/6
+	}
 }

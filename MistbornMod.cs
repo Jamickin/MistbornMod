@@ -11,23 +11,28 @@ namespace MistbornMod
         public static ModKeybind BrassToggleHotkey { get; private set; }
         public static ModKeybind ZincToggleHotkey { get; private set; }
         public static ModKeybind AtiumToggleHotkey { get; private set; }
-
-
+        public static ModKeybind FlareToggleHotkey { get; private set; }
+        public static ModKeybind UIToggleHotkey { get; private set; }
 
 
         public override void Load()
         {
             // Register the hotkeys when the mod loads
             // The names ("Burn Iron", "Burn Pewter") are shown in the controls menu
-            // The default keys ("F", "G") are just suggestions, users can rebind them
+            // Note: For Iron and Steel we explain they need to be held
             IronToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Iron", "F");
             PewterToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Pewter", "G");
             TinToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Tin", "H");
-            SteelToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Steel", "K");
-            BrassToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Brass", "K");
-            ZincToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Zinc", "K");
-            AtiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Atium", "K");
-
+            SteelToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Steel", "J");
+            BrassToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Brass", "B");
+            ZincToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Zinc", "Z");
+            AtiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Atium", "V");
+            
+            // Add the flare toggle keybind - use Alt as default since it's commonly available
+            FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
+            
+            // Add UI toggle keybind
+            UIToggleHotkey = KeybindLoader.RegisterKeybind(this, "Toggle Metal UI", "U");
         }
 
         // It's good practice to unload static variables
@@ -39,6 +44,9 @@ namespace MistbornMod
             TinToggleHotkey = null;
             BrassToggleHotkey = null;
             ZincToggleHotkey = null;
+            AtiumToggleHotkey = null;
+            FlareToggleHotkey = null;
+            UIToggleHotkey = null;
         }
     }
 }

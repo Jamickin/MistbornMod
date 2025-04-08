@@ -11,9 +11,9 @@ namespace MistbornMod.Buffs
     {
         private const float ScanRange = 500f;
         private const float PullRange = 400f;
-        private const float PullForce = 3.5f; // Increased from 2f for smoother pulling
-        private const float PlayerPullForce = 5f; // Force to pull the player toward metals
-        private const float MaxPlayerPullSpeedSq = 8f * 8f; // Max squared velocity when player is pulled
+        private const float PullForce = 3.5f; // Base pulling force
+        private const float PlayerPullForce = 5f; // Base force to pull the player toward metals
+        private const float MaxPlayerPullSpeedSq = 8f * 8f; // Base max squared velocity when player is pulled
         private const int LineDustType = DustID.MagicMirror; 
 
         private int playerPullCooldown = 0;
@@ -26,6 +26,15 @@ namespace MistbornMod.Buffs
 
        public override void Update(Player player, ref int buffIndex)
         {
+            // Get the MistbornPlayer instance to check flaring status
+            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+            float multiplier = modPlayer.IsFlaring ? 2.0f : 1.0f;
+            
+            // Calculate dynamic values based on flaring status
+            float currentPullForce = PullForce * multiplier;
+            float currentPlayerPullForce = PlayerPullForce * multiplier;
+            float currentMaxSpeedSq = MaxPlayerPullSpeedSq * multiplier;
+            
             // Reduce cooldown for player pulling
             if (playerPullCooldown > 0) {
                 playerPullCooldown--;
@@ -48,9 +57,10 @@ namespace MistbornMod.Buffs
 
                 if (distanceToItem < ScanRange && isMetallic)
                 {
-                    if (Main.rand.NextBool(5))
+                    // More dust effects when flaring
+                    if (Main.rand.NextBool(modPlayer.IsFlaring ? 3 : 5))
                     {
-                        Dust.NewDust(item.position, item.width, item.height, LineDustType, 0f, 0f, 150, default, 0.6f);
+                        Dust.NewDust(item.position, item.width, item.height, LineDustType, 0f, 0f, 150, default, modPlayer.IsFlaring ? 0.8f : 0.6f);
                     }
                     
                     // Show line only to closest item or if actively pulling
@@ -71,17 +81,17 @@ namespace MistbornMod.Buffs
                             direction.Normalize();
                             // Apply stronger pull to the targeted item
                             float pullMultiplier = (closestTargetEntity == item) ? 1.0f : 0.5f;
-                            item.velocity += direction * PullForce * pullMultiplier;
+                            item.velocity += direction * currentPullForce * pullMultiplier;
                             
-                            if (item.velocity.LengthSquared() > 100f) {
-                                item.velocity *= 10f / item.velocity.Length();
+                            if (item.velocity.LengthSquared() > 100f * multiplier) {
+                                item.velocity *= 10f * multiplier / item.velocity.Length();
                             }
                         }
                     }
                 }
             } 
 
-            // Scan for metallic tiles
+            // Scan for metallic tiles - increased range when flaring
             int playerTileX = (int)(player.Center.X / 16f);
             int playerTileY = (int)(player.Center.Y / 16f);
             int tileScanRadius = (int)(ScanRange / 16f) + 2;
@@ -99,9 +109,10 @@ namespace MistbornMod.Buffs
                         
                         if (distToTile < ScanRange)
                         {
-                            if (Main.rand.NextBool(8))
+                            // More dust when flaring
+                            if (Main.rand.NextBool(modPlayer.IsFlaring ? 5 : 8))
                             {
-                                Dust.NewDust(new Vector2(x * 16f, y * 16f), 16, 16, LineDustType, 0f, 0f, 150, default, 0.5f);
+                                Dust.NewDust(new Vector2(x * 16f, y * 16f), 16, 16, LineDustType, 0f, 0f, 150, default, modPlayer.IsFlaring ? 0.7f : 0.5f);
                             }
                             
                             // Check if this tile is closest to mouse cursor
@@ -120,10 +131,10 @@ namespace MistbornMod.Buffs
             // Draw line to the closest target and apply forces
             if (closestTargetEntity != null) 
             {
-                DrawLineWithDust(player.Center, closestTargetEntity.Center, LineDustType, 0.15f);
+                // Thicker line when flaring
+                DrawLineWithDust(player.Center, closestTargetEntity.Center, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
                 
                 // Check if this is a "held" mechanic activation
-                MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
                 if (modPlayer.IsActivelyIronPulling && playerPullCooldown <= 0)
                 {
                     // Only pull player if they're actively using Iron and not an item
@@ -133,10 +144,10 @@ namespace MistbornMod.Buffs
                         if (pullDirection != Vector2.Zero)
                         {
                             pullDirection.Normalize();
-                            if (player.velocity.LengthSquared() < MaxPlayerPullSpeedSq) 
+                            if (player.velocity.LengthSquared() < currentMaxSpeedSq) 
                             {
-                                player.velocity += pullDirection * PlayerPullForce * 0.5f;
-                                playerPullCooldown = 5; // Shorter cooldown than steel
+                                player.velocity += pullDirection * currentPlayerPullForce * 0.5f;
+                                playerPullCooldown = modPlayer.IsFlaring ? 3 : 5; // Shorter cooldown when flaring
                             }
                         }
                     }
@@ -144,30 +155,35 @@ namespace MistbornMod.Buffs
             }
             else if (closestTilePos.HasValue)
             {
-                DrawLineWithDust(player.Center, closestTilePos.Value, LineDustType, 0.15f);
+                // Thicker line when flaring
+                DrawLineWithDust(player.Center, closestTilePos.Value, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
                 
                 // Check if actively pulling and apply force to player
-                MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
                 if (modPlayer.IsActivelyIronPulling && playerPullCooldown <= 0)
                 {
                     Vector2 pullDirection = closestTilePos.Value - player.Center;
                     if (pullDirection != Vector2.Zero)
                     {
                         pullDirection.Normalize();
-                        if (player.velocity.LengthSquared() < MaxPlayerPullSpeedSq)
+                        if (player.velocity.LengthSquared() < currentMaxSpeedSq)
                         {
-                            player.velocity += pullDirection * PlayerPullForce;
-                            playerPullCooldown = 8;
+                            player.velocity += pullDirection * currentPlayerPullForce;
+                            playerPullCooldown = modPlayer.IsFlaring ? 5 : 8; // Shorter cooldown when flaring
+                            
+                            // Cancel fall damage when pulling forcefully
+                            if (modPlayer.IsFlaring) {
+                                player.fallStart = (int)(player.position.Y / 16f);
+                            }
                         }
                     }
                 }
             }
 
-            // Add ambient dust around player
-            if (Main.rand.NextBool(10))
+            // Add ambient dust around player - more when flaring
+            if (Main.rand.NextBool(modPlayer.IsFlaring ? 5 : 10))
             {
-                Vector2 dustVel = Main.rand.NextVector2CircularEdge(1f, 1f);
-                Dust.NewDustPerfect(player.Center, LineDustType, dustVel, 150, default, 0.8f);
+                Vector2 dustVel = Main.rand.NextVector2CircularEdge(modPlayer.IsFlaring ? 1.5f : 1f, modPlayer.IsFlaring ? 1.5f : 1f);
+                Dust.NewDustPerfect(player.Center, LineDustType, dustVel, 150, default, modPlayer.IsFlaring ? 1.0f : 0.8f);
             }
         } 
 
@@ -240,17 +256,21 @@ namespace MistbornMod.Buffs
             int steps = (int)(distance * density);
             if (steps <= 0) return;
 
+            // Get the player's flaring status for dust intensity
+            MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+            bool isFlaring = modPlayer?.IsFlaring ?? false;
+
             for (int i = 1; i <= steps; i++)
             {
                 float progress = (float)i / steps;
                 Vector2 dustPos = start + direction * distance * progress;
-                if(Main.rand.NextBool(3)) {
-                     Dust dust = Dust.NewDustPerfect(dustPos, dustType, Vector2.Zero, 150, default, 0.4f);
+                if(Main.rand.NextBool(isFlaring ? 2 : 3)) {
+                     Dust dust = Dust.NewDustPerfect(dustPos, dustType, Vector2.Zero, 150, default, isFlaring ? 0.5f : 0.4f);
                      dust.noGravity = true;
                      dust.velocity *= 0.1f;
-                     dust.fadeIn = 0.6f;
+                     dust.fadeIn = isFlaring ? 0.8f : 0.6f;
                 }
             }
-        } 
+        }
     } 
 }
