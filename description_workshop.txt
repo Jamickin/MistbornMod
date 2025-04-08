@@ -3,28 +3,30 @@
 This mod brings the Allomantic magic system from Brandon Sanderson's Mistborn series to Terraria!
 
 FEATURES:
-• Seven Allomantic metals to burn, each with unique powers
-• Craft and drink metal vials to store reserves
-• Metal burning mechanics with gradually depleting reserves
-• Hold key mechanics for Steel and Iron to push and pull on metals
-• FLARE your metals for double power (but double consumption)
-• New ore: Zinc, used in crafting zinc and brass vials
-• Complete Mistborn experience with visual and sound effects
+- Nine Allomantic metals to burn, each with unique powers
+- Craft and drink metal vials to store reserves
+- Metal burning mechanics with gradually depleting reserves
+- Hold key mechanics for Steel and Iron to push and pull on metals
+- FLARE your metals for double power (but double consumption)
+- New ore: Zinc, used in crafting zinc and brass vials
+- Complete Mistborn experience with visual and sound effects
 
 METALS & ABILITIES:
-• Iron - Pull metals toward you or pull yourself toward metal anchors
-• Steel - Push metals away or launch yourself by pushing against metal anchors
-• Tin - Enhanced senses, night vision, and danger detection
-• Pewter - Enhanced strength, defense, and physical abilities
-• Zinc - Riot emotions of enemies, making them more vulnerable
-• Brass - Soothe emotions of enemies, making them less aggressive
-• Atium - Become temporarily invulnerable (extremely rare)
+- Iron - Pull metals toward you or pull yourself toward metal anchors
+- Steel - Push metals away or launch yourself by pushing against metal anchors
+- Tin - Enhanced senses, night vision, and danger detection
+- Pewter - Enhanced strength, defense, and physical abilities
+- Zinc - Riot emotions of enemies, making them more vulnerable
+- Brass - Soothe emotions of enemies, making them less aggressive
+- Copper - Create a coppercloud that hides your Allomancy
+- Bronze - Detect other Allomancers using metals
+- Atium - Become temporarily invulnerable (extremely rare)
 
 CONTROLS:
-• Each metal has its own dedicated hotkey (customizable in Controls)
-• Steel and Iron use "hold key" mechanics for dynamic movement
-• Press [Left Alt] to FLARE actively burning metals
+- Each metal has its own dedicated hotkey (customizable in Controls)
+- Steel and Iron use "hold key" mechanics for dynamic movement
+- Press [Left Alt] to FLARE actively burning metals
 
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 0.1 - Initial Release
+Version 0.4 - Added 2 New Metals. Recipes and new Ore coming!

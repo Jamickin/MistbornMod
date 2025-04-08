@@ -7,6 +7,8 @@ Drink metal vials and burn metals to gain powerful abilities:
 - Pewter: Increased physical abilities including strength, defense, and speed
 - Zinc: Riot the emotions of nearby enemies, making them more vulnerable
 - Brass: Soothe the emotions of nearby enemies, making them less aggressive
+- Copper: Hide your Allomancy from other players
+- Bronze: Detect other players using Allomancy
 - Atium: Become temporarily invulnerable (extremely rare)
 
 FLARING: Press [LeftAlt] when burning metals to increase their power! 

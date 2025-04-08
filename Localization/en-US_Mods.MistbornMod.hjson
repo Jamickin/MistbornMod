@@ -40,13 +40,13 @@ Buffs: {
 	}
 
 	BronzeBuff: {
-		DisplayName: Bronze Buff
-		Description: Mods.MistbornMod.Buffs.BronzeBuff.Description
+		DisplayName: Bronze Seeker
+		Description: You can detect other Allomancers burning metals!
 	}
 
 	CopperBuff: {
-		DisplayName: Copper Buff
-		Description: Mods.MistbornMod.Buffs.CopperBuff.Description
+		DisplayName: Copper Smoker
+		Description: You are creating a coppercloud that hides Allomancy from Bronze seekers!
 	}
 }
 
@@ -98,12 +98,12 @@ Items: {
 
 	BronzeVial: {
 		DisplayName: Bronze Vial
-		Tooltip: ""
+		Tooltip: A Shiny ore used in Allomantic brewing
 	}
 
 	CopperVial: {
 		DisplayName: Copper Vial
-		Tooltip: ""
+		Tooltip: A Shiny ore used in Allomantic brewing
 	}
 }
 
