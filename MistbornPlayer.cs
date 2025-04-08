@@ -20,8 +20,11 @@ namespace MistbornMod
         // Hold-type mechanic flags
         public bool IsActivelySteelPushing { get; private set; } = false;
         public bool IsActivelyIronPulling { get; private set; } = false;
-        public bool IsActivelyChromiumStripping { get; private set; } = false; // Added for Chromium
+        public bool IsActivelyChromiumStripping { get; set; } = false; // Added for Chromium
         public bool IsBurningAtium { get; set; } = false;
+        public bool IsGeneratingCoppercloud { get; set; } = false;
+        public float CoppercloudRadius { get; set; } = 0f;
+        public bool IsBronzeScanning { get; set; } = false;
         
         // Flaring mechanic
         public bool IsFlaring { get; private set; } = false;
@@ -37,6 +40,37 @@ namespace MistbornMod
         // Visual feedback properties for flaring
         public int FlareEffectTimer { get; private set; } = 0;
         public float FlareIntensity { get; private set; } = 0f;
+
+        public bool IsHiddenByCoppercloud 
+{ 
+    get 
+    {
+        // Check if self-cloaked
+        if (IsGeneratingCoppercloud) return true;
+        
+        // Skip the rest in single player
+        if (Main.netMode == NetmodeID.SinglePlayer) return false;
+        
+        // Check if within another player's coppercloud
+        for (int i = 0; i < Main.maxPlayers; i++)
+        {
+            Player otherPlayer = Main.player[i];
+            if (!otherPlayer.active || otherPlayer == Player) continue;
+            
+            MistbornPlayer otherModPlayer = otherPlayer.GetModPlayer<MistbornPlayer>();
+            if (otherModPlayer.IsGeneratingCoppercloud)
+            {
+                float distSq = Vector2.DistanceSquared(Player.Center, otherPlayer.Center);
+                if (distSq < otherModPlayer.CoppercloudRadius * otherModPlayer.CoppercloudRadius)
+                {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
+    }
+}
         
         // UI visibility flag
         public bool ShowMetalUI { get; private set; } = true;
@@ -145,6 +179,9 @@ namespace MistbornMod
             if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
             if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Zinc); }
             if (MistbornMod.AtiumToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Atium); }
+            // Add to ProcessTriggers method 
+            if (MistbornMod.CopperToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Copper); }
+            if (MistbornMod.BronzeToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Bronze); }
             
             // Chromium is now a hold mechanic like Iron/Steel, not a toggle
             if (MistbornMod.ChromiumToggleHotkey?.JustPressed ?? false) { 
@@ -437,6 +474,8 @@ namespace MistbornMod
                      case MetalType.Zinc: return ModContent.BuffType<Buffs.ZincBuff>();
                      case MetalType.Atium: return ModContent.BuffType<Buffs.AtiumBuff>();
                      case MetalType.Chromium: return ModContent.BuffType<Buffs.ChromiumBuff>();
+                     case MetalType.Copper: return ModContent.BuffType<Buffs.CopperBuff>();
+                     case MetalType.Bronze: return ModContent.BuffType<Buffs.BronzeBuff>();
                      default: return -1;
                  }
             } catch (Exception e) { Mod.Logger.Error($"Error getting Buff ID for MetalType.{metal}.", e); return -1; }
@@ -446,13 +485,20 @@ namespace MistbornMod
         public void DrinkMetalVial(MetalType metal, int durationValue)
         {
             int currentReserve = MetalReserves.GetValueOrDefault(metal, 0);
-            int currentTotalReserves = TotalReserves;
-            
+            int currentTotalReserves = 0;
+            foreach (var pair in MetalReserves)
+            {
+            if (pair.Key != MetalType.Chromium)
+            {
+                currentTotalReserves += pair.Value;
+            }
+        }            
             // Calculate how much we can actually add based on total cap
             // No longer checking against MAX_METAL_RESERVE for individual metals
             int maxAddToTotal = MAX_TOTAL_RESERVES - currentTotalReserves; // Cap for all metals combined
-            int actualAmountToAdd = Math.Min(durationValue, maxAddToTotal);
-            
+            int actualAmountToAdd = metal == MetalType.Chromium ? 
+            durationValue : 
+            Math.Min(durationValue, maxAddToTotal);            
             if (actualAmountToAdd <= 0) {
                 // Can't add any more - metal reserves full
                 Main.NewText("Your total metal reserves are full!", 255, 100, 100);
@@ -483,9 +529,17 @@ namespace MistbornMod
         
         // Gets the percentage of total reserves used (0.0 to 1.0)
         public float GetTotalReservesPercentage()
+{
+    int totalWithoutChromium = 0;
+    foreach (var pair in MetalReserves)
+    {
+        if (pair.Key != MetalType.Chromium)
         {
-            return (float)TotalReserves / MAX_TOTAL_RESERVES;
+            totalWithoutChromium += pair.Value;
         }
+    }
+    return (float)totalWithoutChromium / MAX_TOTAL_RESERVES;
+}
         
         // Gets the percentage of a specific metal's reserves relative to maximum total reserves
         // This method is updated to show a metal's reserves as a percentage of one vial

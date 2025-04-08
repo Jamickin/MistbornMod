@@ -87,7 +87,22 @@ namespace MistbornMod.Recipes
             // Require simple ingredients for testing
             chromiumVialRecipe.AddIngredient(ItemID.Diamond, 1); // Requires a diamond for testing
             chromiumVialRecipe.AddTile(TileID.Bottles);
-            chromiumVialRecipe.Register();        }
+            chromiumVialRecipe.Register();        
+            
+            Recipe copperVialRecipe = Recipe.Create(ModContent.ItemType<CopperVial>());
+copperVialRecipe.AddIngredient(ItemID.BottledWater);
+copperVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount);
+copperVialRecipe.AddTile(TileID.Bottles);
+copperVialRecipe.Register();
+
+// Add Bronze Vial Recipe (mix of copper and tin)
+Recipe bronzeVialRecipe = Recipe.Create(ModContent.ItemType<BronzeVial>());
+bronzeVialRecipe.AddIngredient(ItemID.BottledWater);
+bronzeVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount / 2 + 1);
+bronzeVialRecipe.AddIngredient(ItemID.TinOre, oreAmount / 2 + 1);
+bronzeVialRecipe.AddTile(TileID.Bottles);
+bronzeVialRecipe.Register();
+            }
     }
 }
 

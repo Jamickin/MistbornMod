@@ -38,6 +38,16 @@ Buffs: {
 		DisplayName: Chromium Leech
 		Description: Strips away all your other metal reserves! [c/00DDFF:For Testing]
 	}
+
+	BronzeBuff: {
+		DisplayName: Bronze Buff
+		Description: Mods.MistbornMod.Buffs.BronzeBuff.Description
+	}
+
+	CopperBuff: {
+		DisplayName: Copper Buff
+		Description: Mods.MistbornMod.Buffs.CopperBuff.Description
+	}
 }
 
 Items: {
@@ -85,6 +95,16 @@ Items: {
 		DisplayName: Zinc Ore
 		Tooltip: A Shiny ore used in Allomantic brewing
 	}
+
+	BronzeVial: {
+		DisplayName: Bronze Vial
+		Tooltip: ""
+	}
+
+	CopperVial: {
+		DisplayName: Copper Vial
+		Tooltip: ""
+	}
 }
 
 Keybinds: {
@@ -98,6 +118,8 @@ Keybinds: {
 	"Burn Chromium.DisplayName": Test: Empty Reserves
 	"Flare Metals.DisplayName": Flare Metals (Double Power/Consumption)
 	"Toggle Metal UI.DisplayName": Toggle Metal Reserves UI
+	"Burn Bronze.DisplayName": Burn  Bronze
+	"Burn Copper.DisplayName": Burn  Copper
 }
 
 UI: {

@@ -14,6 +14,8 @@ namespace MistbornMod
         public static ModKeybind ChromiumToggleHotkey { get; private set; } // Added Chromium hotkey
         public static ModKeybind FlareToggleHotkey { get; private set; }
         public static ModKeybind UIToggleHotkey { get; private set; }
+        public static ModKeybind CopperToggleHotkey { get; private set; }
+        public static ModKeybind BronzeToggleHotkey { get; private set; }   
 
 
         public override void Load()
@@ -29,7 +31,8 @@ namespace MistbornMod
             ZincToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Zinc", "Z");
             AtiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Atium", "V");
             ChromiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Chromium", "K"); // Added Chromium with default key K
-            
+            CopperToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Copper", "C");
+            BronzeToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Bronze", "N");
             // Add the flare toggle keybind - use Alt as default since it's commonly available
             FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
             
@@ -49,6 +52,8 @@ namespace MistbornMod
             AtiumToggleHotkey = null;
             ChromiumToggleHotkey = null; // Added Chromium unload
             FlareToggleHotkey = null;
+            CopperToggleHotkey = null;
+            BronzeToggleHotkey = null;
             UIToggleHotkey = null;
         }
     }
