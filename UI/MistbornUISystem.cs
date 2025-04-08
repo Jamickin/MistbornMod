@@ -82,6 +82,13 @@ namespace MistbornMod.UI
             // Only update the interface if the UI should be visible
             if (modPlayer.ShowMetalUI)
             {
+                // Check if the UI interface contains the mouse point
+                if (MetalReservesUI.ContainsPoint(Main.MouseScreen))
+                {
+                    // Disable player controls when hovering UI
+                    Main.LocalPlayer.mouseInterface = true;
+                }
+                
                 _metalReservesInterface?.Update(gameTime);
             }
         }

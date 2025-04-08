@@ -105,6 +105,11 @@ Items: {
 		DisplayName: Copper Vial
 		Tooltip: A Shiny ore used in Allomantic brewing
 	}
+
+	LerasiumBead: {
+		DisplayName: Lerasium Bead
+		Tooltip: ""
+	}
 }
 
 Keybinds: {

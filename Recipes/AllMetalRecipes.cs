@@ -77,32 +77,23 @@ namespace MistbornMod.Recipes
             // --- Zinc Vial Recipe (Updated) ---
             Recipe zincVialRecipe = Recipe.Create(ModContent.ItemType<ZincVial>()); 
             zincVialRecipe.AddIngredient(ItemID.BottledWater);
-             // Use ModContent.ItemType for your modded Zinc Ore
             zincVialRecipe.AddIngredient(ModContent.ItemType<ZincOre>(), oreAmount);
             zincVialRecipe.AddTile(TileID.Bottles);
             zincVialRecipe.Register();
-
-            Recipe chromiumVialRecipe = Recipe.Create(ModContent.ItemType<ChromiumVial>());
-            chromiumVialRecipe.AddIngredient(ItemID.BottledWater);
-            // Require simple ingredients for testing
-            chromiumVialRecipe.AddIngredient(ItemID.Diamond, 1); // Requires a diamond for testing
-            chromiumVialRecipe.AddTile(TileID.Bottles);
-            chromiumVialRecipe.Register();        
             
             Recipe copperVialRecipe = Recipe.Create(ModContent.ItemType<CopperVial>());
-copperVialRecipe.AddIngredient(ItemID.BottledWater);
-copperVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount);
-copperVialRecipe.AddTile(TileID.Bottles);
-copperVialRecipe.Register();
+            copperVialRecipe.AddIngredient(ItemID.BottledWater);
+            copperVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount);
+            copperVialRecipe.AddTile(TileID.Bottles);
+            copperVialRecipe.Register();
 
-// Add Bronze Vial Recipe (mix of copper and tin)
-Recipe bronzeVialRecipe = Recipe.Create(ModContent.ItemType<BronzeVial>());
-bronzeVialRecipe.AddIngredient(ItemID.BottledWater);
-bronzeVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount / 2 + 1);
-bronzeVialRecipe.AddIngredient(ItemID.TinOre, oreAmount / 2 + 1);
-bronzeVialRecipe.AddTile(TileID.Bottles);
-bronzeVialRecipe.Register();
+            Recipe bronzeVialRecipe = Recipe.Create(ModContent.ItemType<BronzeVial>());
+            bronzeVialRecipe.AddIngredient(ItemID.BottledWater);
+            bronzeVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount / 2 + 1);
+            bronzeVialRecipe.AddIngredient(ItemID.TinOre, oreAmount / 2 + 1);
+            bronzeVialRecipe.AddTile(TileID.Bottles);
+            bronzeVialRecipe.Register();
             }
+        }
     }
-}
 

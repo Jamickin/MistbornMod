@@ -17,6 +17,7 @@ namespace MistbornMod
         public Dictionary<MetalType, bool> BurningMetals { get; private set; } = new Dictionary<MetalType, bool>();
         public Dictionary<MetalType, int> MetalReserves { get; private set; } = new Dictionary<MetalType, int>();
         
+        
         // Hold-type mechanic flags
         public bool IsActivelySteelPushing { get; private set; } = false;
         public bool IsActivelyIronPulling { get; private set; } = false;
@@ -25,7 +26,8 @@ namespace MistbornMod
         public bool IsGeneratingCoppercloud { get; set; } = false;
         public float CoppercloudRadius { get; set; } = 0f;
         public bool IsBronzeScanning { get; set; } = false;
-        
+        public bool IsMistborn { get; set; } = false;
+
         // Flaring mechanic
         public bool IsFlaring { get; private set; } = false;
 
@@ -120,6 +122,7 @@ namespace MistbornMod
             tag["Mistborn_ReserveValues"] = reserveValues;
             tag["Mistborn_IsFlaring"] = IsFlaring;
             tag["Mistborn_ShowMetalUI"] = ShowMetalUI;
+            tag["Mistborn_IsMistborn"] = IsMistborn; // Save Mistborn status
         }
 
         public override void LoadData(TagCompound tag)
@@ -137,6 +140,8 @@ namespace MistbornMod
             IsActivelyChromiumStripping = false;  // Reset Chromium flag
             IsFlaring = false;
             ShowMetalUI = true;
+            IsMistborn = false; // Reset Mistborn status
+
 
             if (tag.ContainsKey("Mistborn_ReserveMetals") && tag.ContainsKey("Mistborn_ReserveValues")) {
                 var metalNames = tag.Get<List<string>>("Mistborn_ReserveMetals");
@@ -162,6 +167,14 @@ namespace MistbornMod
             if (tag.ContainsKey("Mistborn_ShowMetalUI")) {
                 ShowMetalUI = tag.GetBool("Mistborn_ShowMetalUI");
             }
+             if (tag.ContainsKey("Mistborn_IsMistborn")) {
+                IsMistborn = tag.GetBool("Mistborn_IsMistborn");
+                
+                // If player is Mistborn, activate the mist
+                if (IsMistborn && MistbornAscension.Instance != null) {
+                    MistbornAscension.Instance.ActivateMist();
+                }
+        }
         }
 
         public override void ProcessTriggers(TriggersSet triggersSet)
@@ -179,7 +192,6 @@ namespace MistbornMod
             if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
             if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Zinc); }
             if (MistbornMod.AtiumToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Atium); }
-            // Add to ProcessTriggers method 
             if (MistbornMod.CopperToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Copper); }
             if (MistbornMod.BronzeToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Bronze); }
             
@@ -255,6 +267,11 @@ namespace MistbornMod
         // Toggles metals like Pewter, Tin, Brass, Zinc, Atium (NOT Steel, Iron, or Chromium)
         private void ToggleMetal(MetalType metal)
         {
+            if (!IsMistborn)
+            {
+                Main.NewText("You don't have the ability to burn metals.", 255, 100, 100);
+                SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+               
             // Skip Steel, Iron, and Chromium as they use the hold mechanic
             if (metal == MetalType.Steel || metal == MetalType.Iron || metal == MetalType.Chromium) return;
 
@@ -290,6 +307,7 @@ namespace MistbornMod
                 
                 Player.ClearBuff(buffId);
             }
+        }
         }
 
         public override void PostUpdate()
@@ -484,6 +502,12 @@ namespace MistbornMod
         // Adds reserves from a vial, capped at the maximum total reserves
         public void DrinkMetalVial(MetalType metal, int durationValue)
         {
+            if (!IsMistborn)
+            {
+                Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
+                SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+                return;
+            }
             int currentReserve = MetalReserves.GetValueOrDefault(metal, 0);
             int currentTotalReserves = 0;
             foreach (var pair in MetalReserves)
@@ -564,6 +588,8 @@ namespace MistbornMod
         case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys()[0] ?? "Z"; break;
         case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys()[0] ?? "V"; break;
         case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys()[0] ?? "K"; break;
+        case MetalType.Copper: keybind = MistbornMod.CopperToggleHotkey?.GetAssignedKeys()[0] ?? "C"; break;
+        case MetalType.Bronze: keybind = MistbornMod.BronzeToggleHotkey?.GetAssignedKeys()[0] ?? "N"; break;
         default: keybind = ""; break;
     }
     return $"[{keybind}]";

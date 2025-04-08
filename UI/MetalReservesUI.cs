@@ -60,6 +60,49 @@ namespace MistbornMod.UI
             }
         }
 
+        public override bool ContainsPoint(Vector2 point)
+        {
+            // Calculate panel height dynamically
+            float panelHeight = CalculatePanelHeight();
+            
+            // Create a rectangle representing the entire UI panel
+            Rectangle uiArea = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                (int)PANEL_WIDTH,
+                (int)panelHeight
+            );
+            
+            // Return true if the point is within the UI area
+            return uiArea.Contains(point.ToPoint());
+        }
+        
+        public override void LeftMouseDown(UIMouseEvent evt)
+        {
+            base.LeftMouseDown(evt);
+            
+            // Calculate the header area for dragging
+            Rectangle headerArea = new Rectangle(
+                (int)_position.X,
+                (int)_position.Y,
+                (int)PANEL_WIDTH,
+                30
+            );
+            
+            // Check if clicking in the header area
+            if (headerArea.Contains(evt.MousePosition.ToPoint()))
+            {
+                _dragging = true;
+                _dragOffset = evt.MousePosition - _position;
+            }
+        }
+        
+        public override void LeftMouseUp(UIMouseEvent evt)
+        {
+            base.LeftMouseUp(evt);
+            _dragging = false;
+        }
+
         // Calculate the actual height needed for the panel based on content
         private float CalculatePanelHeight()
         {
@@ -131,13 +174,6 @@ namespace MistbornMod.UI
                 (int)PANEL_WIDTH,
                 30
             );
-            
-            // Check for clicking on the header (for dragging)
-            if (headerArea.Contains(Main.MouseScreen.ToPoint()) && Main.mouseLeft && !_dragging)
-            {
-                _dragging = true;
-                _dragOffset = Main.MouseScreen - _position;
-            }
             
             // Draw panel background
             Texture2D backgroundTexture = MistbornUISystem.MetalUIBackground.Value;
@@ -263,12 +299,12 @@ namespace MistbornMod.UI
                 string displayText = $"{metalName} {hotkeyDisplay}";
                 Vector2 nameSize = FontAssets.ItemStack.Value.MeasureString(metalName);
                 Utils.DrawBorderString(
-                spriteBatch,
-                displayText,
-                new Vector2(_position.X + PADDING + ICON_SIZE + SPACING, currentY + ICON_SIZE / 2 - nameSize.Y / 2),
-                isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White,
-                0.8f
-);
+                    spriteBatch,
+                    displayText,
+                    new Vector2(_position.X + PADDING + ICON_SIZE + SPACING, currentY + ICON_SIZE / 2 - nameSize.Y / 2),
+                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White,
+                    0.8f
+                );
                 
                 // Draw metal reserve as seconds
                 int secondsLeft = modPlayer.MetalReserves.TryGetValue(metal, out int reserves) ? reserves / 60 : 0;

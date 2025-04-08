@@ -10,7 +10,7 @@ namespace MistbornMod.Buffs
     {
         private const float PushRange = 320f; // 20 tiles
         private const float PushForce = 5f; // Base pushing force
-        private const int PushDustType = DustID.Smoke;
+        private const int PushDustType = DustID.BlueTorch;
         private const float PlayerPushForce = 7.5f; // Base force
         private const float MaxPlayerPushSpeedSq = 12f * 12f; // Base max speed squared
         

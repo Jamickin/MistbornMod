@@ -45,9 +45,6 @@ namespace MistbornMod.Buffs
                         // When flaring, also apply additional debuffs to represent more intense rioting
                         if (modPlayer.IsFlaring)
                         {
-                            // Apply On Fire! debuff to represent rage
-                            npc.AddBuff(BuffID.OnFire, currentDebuffDuration);
-                            
                             // Apply Confusion to represent mental instability from intense rioting
                             npc.AddBuff(BuffID.Confused, currentDebuffDuration / 2);
                             
