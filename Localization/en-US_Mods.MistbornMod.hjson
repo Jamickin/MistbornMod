@@ -1,0 +1,88 @@
+Buffs: {
+	IronBuff: {
+		DisplayName: Iron Sight
+		Description: Hold key to pull metals towards you or pull yourself towards metal anchors!
+	}
+
+	PewterBuff: {
+		DisplayName: Pewter Body
+		Description: All your physical stats have been increased!
+	}
+
+	TinBuff: {
+		DisplayName: Tin Eye
+		Description: You have Night Vision and Danger Sense!
+	}
+
+	SteelBuff: {
+		DisplayName: Steel Push
+		Description: Hold key to push metals away or push yourself away from metal anchors!
+	}
+
+	BrassBuff: {
+		DisplayName: Brass Calm
+		Description: You soothe nearby enemies!
+	}
+
+	ZincBuff: {
+		DisplayName: Zinc Madness
+		Description: You riot nearby enemies!
+	}
+
+	AtiumBuff: {
+		DisplayName: Atium Ecstacy
+		Description: You are untouchable!
+	}
+}
+
+Items: {
+	IronVial: {
+		DisplayName: Iron Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	PewterVial: {
+		DisplayName: Pewter Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	TinVial: {
+		DisplayName: Tin Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	SteelVial: {
+		DisplayName: Steel Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	BrassVial: {
+		DisplayName: Brass Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	ZincVial: {
+		DisplayName: Zinc Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	AtiumVial: {
+		DisplayName: Atium Vial
+		Tooltip: A small vial with liquid and some metal shavings
+	}
+
+	ZincOre: {
+		DisplayName: Zinc Ore
+		Tooltip: A Shiny ore used in Allomantic brewing
+	}
+}
+
+Keybinds: {
+	"Burn Tin.DisplayName": Burn Tin
+	"Burn Pewter.DisplayName": Burn Pewter
+	"Burn Iron.DisplayName": Hold to Pull Metals
+	"Burn Steel.DisplayName": Hold to Push Metals
+	"Burn Brass.DisplayName": Burn Brass
+	"Burn Zinc.DisplayName": Burn Zinc
+	"Burn Atium.DisplayName": Burn Atium
+}
