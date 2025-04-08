@@ -12,6 +12,9 @@ Drink metal vials and burn metals to gain powerful abilities:
 FLARING: Press [LeftAlt] when burning metals to increase their power! 
 Flaring doubles the effectiveness of all metals but also doubles consumption rate.
 
+METAL RESERVES: Your body can hold a limited amount of metal! Each vial gives you 60 seconds of reserves,
+and you can store up to 6 vials worth of metals total. Toggle the metal reserves UI with [U].
+
 Find metal vials and create your own at alchemy stations. Discover metallic ores in the world to brew new allomantic metals.
 
 Survive, fight, and navigate like a true Mistborn!

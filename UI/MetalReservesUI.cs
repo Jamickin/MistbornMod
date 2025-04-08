@@ -134,8 +134,8 @@ namespace MistbornMod.UI
             // Draw panel title
             string title = Language.GetTextValue("Mods.MistbornMod.UI.MetalReserves.Title");
             Vector2 titleSize = FontAssets.MouseText.Value.MeasureString(title);
-            spriteBatch.DrawString(
-                FontAssets.MouseText.Value,
+            Utils.DrawBorderString(
+                spriteBatch,
                 title,
                 new Vector2(_position.X + PANEL_WIDTH / 2 - titleSize.X / 2, _position.Y + PADDING),
                 Color.White
@@ -148,11 +148,12 @@ namespace MistbornMod.UI
             // Draw total reserve text
             string totalCapacityText = Language.GetTextValue("Mods.MistbornMod.UI.MetalReserves.TotalCapacity");
             Vector2 totalCapacitySize = FontAssets.ItemStack.Value.MeasureString(totalCapacityText);
-            spriteBatch.DrawString(
-                FontAssets.ItemStack.Value,
+            Utils.DrawBorderString(
+                spriteBatch,
                 totalCapacityText,
                 new Vector2(_position.X + PADDING, _position.Y + PADDING + titleSize.Y + SPACING),
-                Color.White
+                Color.White,
+                0.8f
             );
             
             // Draw total reserve bar
@@ -168,13 +169,14 @@ namespace MistbornMod.UI
             
             // Draw vials used text
             int vialsUsed = (int)Math.Ceiling(modPlayer.TotalReserves / (float)MistbornPlayer.METAL_VIAL_AMOUNT);
-            string vialsText = Language.GetTextValue("Mods.MistbornMod.UI.MetalReserves.VialsUsed", vialsUsed);
+            string vialsText = string.Format(Language.GetTextValue("Mods.MistbornMod.UI.MetalReserves.VialsUsed"), vialsUsed);
             Vector2 vialsTextSize = FontAssets.ItemStack.Value.MeasureString(vialsText);
-            spriteBatch.DrawString(
-                FontAssets.ItemStack.Value,
+            Utils.DrawBorderString(
+                spriteBatch,
                 vialsText,
                 new Vector2(_position.X + PANEL_WIDTH - PADDING - vialsTextSize.X, _position.Y + PADDING + titleSize.Y + SPACING),
-                vialsUsed >= 6 ? new Color(255, 100, 100) : Color.White
+                vialsUsed >= 6 ? new Color(255, 100, 100) : Color.White,
+                0.8f
             );
             
             // Calculate the start Y position for drawing metal bars
@@ -220,22 +222,24 @@ namespace MistbornMod.UI
                 // Draw metal name
                 string metalName = metal.ToString();
                 Vector2 nameSize = FontAssets.ItemStack.Value.MeasureString(metalName);
-                spriteBatch.DrawString(
-                    FontAssets.ItemStack.Value,
+                Utils.DrawBorderString(
+                    spriteBatch,
                     metalName,
                     new Vector2(_position.X + PADDING + ICON_SIZE + SPACING, currentY + ICON_SIZE / 2 - nameSize.Y / 2),
-                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White
+                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White,
+                    0.8f
                 );
                 
                 // Draw metal reserve as seconds
                 int secondsLeft = modPlayer.MetalReserves.TryGetValue(metal, out int reserves) ? reserves / 60 : 0;
                 string timeText = $"{secondsLeft}s";
                 Vector2 timeSize = FontAssets.ItemStack.Value.MeasureString(timeText);
-                spriteBatch.DrawString(
-                    FontAssets.ItemStack.Value,
+                Utils.DrawBorderString(
+                    spriteBatch,
                     timeText,
                     new Vector2(_position.X + PANEL_WIDTH - PADDING - timeSize.X, currentY + ICON_SIZE / 2 - timeSize.Y / 2),
-                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 150, 50) : new Color(255, 255, 150)) : Color.White
+                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 150, 50) : new Color(255, 255, 150)) : Color.White,
+                    0.8f
                 );
                 
                 // Draw metal reserve bar
