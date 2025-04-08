@@ -497,5 +497,22 @@ namespace MistbornMod
             // If reserve > METAL_VIAL_AMOUNT, percentage will be > 1.0
             return (float)reserve / METAL_VIAL_AMOUNT;
         }
+        public string GetHotkeyDisplayForMetal(MetalType metal)
+{
+    string keybind = "";
+    switch (metal)
+    {
+        case MetalType.Iron: keybind = MistbornMod.IronToggleHotkey?.GetAssignedKeys()[0] ?? "F"; break;
+        case MetalType.Steel: keybind = MistbornMod.SteelToggleHotkey?.GetAssignedKeys()[0] ?? "J"; break;
+        case MetalType.Pewter: keybind = MistbornMod.PewterToggleHotkey?.GetAssignedKeys()[0] ?? "G"; break;
+        case MetalType.Tin: keybind = MistbornMod.TinToggleHotkey?.GetAssignedKeys()[0] ?? "H"; break;
+        case MetalType.Brass: keybind = MistbornMod.BrassToggleHotkey?.GetAssignedKeys()[0] ?? "B"; break;
+        case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys()[0] ?? "Z"; break;
+        case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys()[0] ?? "V"; break;
+        case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys()[0] ?? "K"; break;
+        default: keybind = ""; break;
+    }
+    return $"[{keybind}]";
+}
     }
 }

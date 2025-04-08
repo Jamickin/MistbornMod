@@ -258,16 +258,17 @@ namespace MistbornMod.UI
                     modPlayer.IsFlaring && isBurning
                 );
                 
-                // Draw metal name
                 string metalName = metal.ToString();
+                string hotkeyDisplay = modPlayer.GetHotkeyDisplayForMetal(metal);
+                string displayText = $"{metalName} {hotkeyDisplay}";
                 Vector2 nameSize = FontAssets.ItemStack.Value.MeasureString(metalName);
                 Utils.DrawBorderString(
-                    spriteBatch,
-                    metalName,
-                    new Vector2(_position.X + PADDING + ICON_SIZE + SPACING, currentY + ICON_SIZE / 2 - nameSize.Y / 2),
-                    isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White,
-                    0.8f
-                );
+                spriteBatch,
+                displayText,
+                new Vector2(_position.X + PADDING + ICON_SIZE + SPACING, currentY + ICON_SIZE / 2 - nameSize.Y / 2),
+                isBurning ? (modPlayer.IsFlaring ? new Color(255, 200, 50) : new Color(255, 255, 150)) : Color.White,
+                0.8f
+);
                 
                 // Draw metal reserve as seconds
                 int secondsLeft = modPlayer.MetalReserves.TryGetValue(metal, out int reserves) ? reserves / 60 : 0;

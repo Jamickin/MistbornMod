@@ -137,7 +137,6 @@ namespace MistbornMod.Buffs
             effectCooldown = 0;
             
             // Reset the active flag
-            modPlayer.IsActivelyChromiumStripping = false;
             
             // Show message
             Main.NewText("Chromium effect has worn off.", 180, 180, 220);
