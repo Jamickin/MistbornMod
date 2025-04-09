@@ -26,6 +26,12 @@ namespace MistbornMod
         private const float MistFadeOutSpeed = 0.001f;
         
         // Mist particle system
+        private List<Asset<Texture2D>> mistParticleTextures;
+        private const int NUM_MIST_TEXTURES = 3;
+
+        private bool showMistDuringDay = false; // Set to true if you want some mist during day
+        private const float DAY_MIST_INTENSITY_FACTOR = 0.25f; // Intensity factor during day if enabled
+        private const float DUSK_DAWN_INTENSITY_FACTOR = 0.5f;
         private const int MaxMistParticles = 200;
         private List<MistParticle> mistParticles;
         private Random random;
@@ -39,20 +45,32 @@ namespace MistbornMod
         // Recipe group for lerasium beads (special ascension item)
         public static RecipeGroup LerasiumBeadRecipeGroup;
 
-        public override void Load()
+       public override void Load()
+{
+    Instance = this;
+    random = new Random();
+    
+    if (!Main.dedServ)
+    {
+        // Initialize mist particle list
+        mistParticles = new List<MistParticle>(MaxMistParticles);
+        
+        // Initialize the list of mist textures
+        mistParticleTextures = new List<Asset<Texture2D>>();
+        
+        // Load multiple mist textures (you'll need to create these)
+        for (int i = 1; i <= NUM_MIST_TEXTURES; i++)
         {
-            Instance = this;
-            random = new Random();
-            
-            if (!Main.dedServ)
-            {
-                // Initialize mist particle list
-                mistParticles = new List<MistParticle>(MaxMistParticles);
-                
-                // Load mist texture
-                mistParticleTexture = ModContent.Request<Texture2D>("MistbornMod/Effects/MistParticle");
-            }
+            mistParticleTextures.Add(ModContent.Request<Texture2D>($"MistbornMod/Effects/MistParticle{i}"));
         }
+        
+        // Keep the original texture as a fallback
+        if (mistParticleTextures.Count == 0)
+        {
+            mistParticleTextures.Add(ModContent.Request<Texture2D>("MistbornMod/Effects/MistParticle"));
+        }
+    }
+}
         
         public override void PostSetupContent()
         {
@@ -68,18 +86,23 @@ namespace MistbornMod
         }
 
         public override void Unload()
-        {
-            Instance = null;
-            
-            if (mistParticles != null)
-            {
-                mistParticles.Clear();
-                mistParticles = null;
-            }
-            
-            mistParticleTexture = null;
-            initialized = false;
-        }
+{
+    Instance = null;
+    
+    if (mistParticles != null)
+    {
+        mistParticles.Clear();
+        mistParticles = null;
+    }
+    
+    if (mistParticleTextures != null)
+    {
+        mistParticleTextures.Clear();
+        mistParticleTextures = null;
+    }
+    
+    initialized = false;
+}
         
         // Method to make a player become Mistborn
         public void MakePlayerMistborn(Player player)
@@ -138,75 +161,99 @@ namespace MistbornMod
             MistActive = false;
         }
         
-        public override void PreUpdatePlayers()
+       public override void PreUpdatePlayers()
+{
+    // Check if at least one player is Mistborn
+    bool anyMistborn = false;
+    bool anyFlaring = false;
+    
+    for (int i = 0; i < Main.maxPlayers; i++)
+    {
+        Player player = Main.player[i];
+        if (player.active)
         {
-            // Check if at least one player is Mistborn
-            bool anyMistborn = false;
-            bool anyFlaring = false;
-            
-            for (int i = 0; i < Main.maxPlayers; i++)
+            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+            if (modPlayer.IsMistborn)
             {
-                Player player = Main.player[i];
-                if (player.active)
-                {
-                    MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-                    if (modPlayer.IsMistborn)
-                    {
-                        anyMistborn = true;
-                        
-                        // Check if any Mistborn is flaring
-                        if (modPlayer.IsFlaring)
-                        {
-                            anyFlaring = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            // Update mist state based on player status
-            if (anyMistborn)
-            {
-                MistActive = true;
+                anyMistborn = true;
                 
-                // Increase intensity when flaring
-                float targetIntensity = anyFlaring ? MaxMistIntensity : MaxMistIntensity * 0.6f;
-                
-                if (MistIntensity < targetIntensity)
+                // Check if any Mistborn is flaring
+                if (modPlayer.IsFlaring)
                 {
-                    MistIntensity += MistFadeInSpeed;
-                    if (MistIntensity > targetIntensity)
-                    {
-                        MistIntensity = targetIntensity;
-                    }
-                }
-                else if (MistIntensity > targetIntensity)
-                {
-                    MistIntensity -= MistFadeOutSpeed;
-                    if (MistIntensity < targetIntensity)
-                    {
-                        MistIntensity = targetIntensity;
-                    }
-                }
-            }
-            else
-            {
-                // Fade out if no Mistborn players
-                if (MistIntensity > 0)
-                {
-                    MistIntensity -= MistFadeOutSpeed;
-                    if (MistIntensity < 0)
-                    {
-                        MistIntensity = 0;
-                        MistActive = false;
-                    }
-                }
-                else
-                {
-                    MistActive = false;
+                    anyFlaring = true;
+                    break;
                 }
             }
         }
+    }
+    
+    // Update mist state based on player status
+    if (anyMistborn)
+    {
+        MistActive = true;
+        
+        // Calculate base intensity based on time of day
+        float timeIntensityFactor;
+        
+        if (!Main.dayTime)
+        {
+            // Night time - full intensity
+            timeIntensityFactor = 1.0f;
+        }
+        else if ((Main.time < 3600 || Main.time > 54000) && showMistDuringDay)
+        {
+            // Dawn or Dusk transition times (first/last hour of day) - medium intensity
+            timeIntensityFactor = DUSK_DAWN_INTENSITY_FACTOR;
+        }
+        else if (showMistDuringDay)
+        {
+            // Day time - reduced intensity
+            timeIntensityFactor = DAY_MIST_INTENSITY_FACTOR;
+        }
+        else
+        {
+            // Day time and not showing mist during day
+            timeIntensityFactor = 0f;
+        }
+        
+        // Increase intensity when flaring
+        float targetIntensity = (anyFlaring ? MaxMistIntensity : MaxMistIntensity * 0.6f) * timeIntensityFactor;
+        
+        if (MistIntensity < targetIntensity)
+        {
+            MistIntensity += MistFadeInSpeed;
+            if (MistIntensity > targetIntensity)
+            {
+                MistIntensity = targetIntensity;
+            }
+        }
+        else if (MistIntensity > targetIntensity)
+        {
+            MistIntensity -= MistFadeOutSpeed;
+            if (MistIntensity < targetIntensity)
+            {
+                MistIntensity = targetIntensity;
+            }
+        }
+    }
+    else
+    {
+        // Fade out if no Mistborn players
+        if (MistIntensity > 0)
+        {
+            MistIntensity -= MistFadeOutSpeed;
+            if (MistIntensity < 0)
+            {
+                MistIntensity = 0;
+                MistActive = false;
+            }
+        }
+        else
+        {
+            MistActive = false;
+        }
+    }
+}
         
         public override void PostUpdateEverything()
         {
@@ -217,132 +264,145 @@ namespace MistbornMod
         }
         
         private void UpdateMistParticles()
+{
+    if (!initialized)
+    {
+        InitializeMistParticles();
+        initialized = true;
+    }
+    
+    // Update existing particles
+    for (int i = mistParticles.Count - 1; i >= 0; i--)
+    {
+        mistParticles[i].Update();
+        
+        // Remove dead particles
+        if (mistParticles[i].Alpha <= 0)
         {
-            if (!initialized)
-            {
-                InitializeMistParticles();
-                initialized = true;
-            }
-            
-            // Update existing particles
-            for (int i = mistParticles.Count - 1; i >= 0; i--)
-            {
-                mistParticles[i].Update();
-                
-                // Remove dead particles
-                if (mistParticles[i].Alpha <= 0)
-                {
-                    mistParticles.RemoveAt(i);
-                }
-            }
-            
-            // Add new particles based on intensity
-            int particlesToAdd = (int)(MaxMistParticles * MistIntensity) - mistParticles.Count;
-            
-            if (Main.rand.NextBool(3) && particlesToAdd > 0)
-            {
-                for (int i = 0; i < Math.Min(particlesToAdd, 5); i++)
-                {
-                    // Create a new particle near a random position on screen
-                    float screenX = Main.screenPosition.X + Main.rand.Next(0, Main.screenWidth);
-                    float screenY = Main.screenPosition.Y + Main.rand.Next(0, Main.screenHeight);
-                    
-                    // Ensure particle is within world bounds
-                    screenX = MathHelper.Clamp(screenX, 0, Main.maxTilesX * 16);
-                    screenY = MathHelper.Clamp(screenY, 0, Main.maxTilesY * 16);
-                    
-                    // Create particle
-                     mistParticles.Add(new MistParticle(
-                        new Vector2(screenX, screenY),
-                        new Vector2(Main.rand.NextFloat(-0.05f, 0.05f), Main.rand.NextFloat(-0.05f, 0.05f)),
-                        Main.rand.Next(200, 400),
-                        Main.rand.NextFloat(0.3f, 0.7f) * MistIntensity,
-                        Main.rand.NextFloat(0.3f, 1.0f)
-                    ));
-                }
-            }
+            mistParticles.RemoveAt(i);
         }
+    }
+    
+    // Add new particles based on intensity
+    int particlesToAdd = (int)(MaxMistParticles * MistIntensity) - mistParticles.Count;
+    
+    if (Main.rand.NextBool(3) && particlesToAdd > 0)
+    {
+        for (int i = 0; i < Math.Min(particlesToAdd, 5); i++)
+        {
+            // Create a new particle near a random position on screen
+            float screenX = Main.screenPosition.X + Main.rand.Next(0, Main.screenWidth);
+            float screenY = Main.screenPosition.Y + Main.rand.Next(0, Main.screenHeight);
+            
+            // Ensure particle is within world bounds
+            screenX = MathHelper.Clamp(screenX, 0, Main.maxTilesX * 16);
+            screenY = MathHelper.Clamp(screenY, 0, Main.maxTilesY * 16);
+            
+            // Randomly select a texture index
+            int textureIndex = Main.rand.Next(0, mistParticleTextures.Count);
+            
+            // Create particle
+            mistParticles.Add(new MistParticle(
+                new Vector2(screenX, screenY),
+                new Vector2(Main.rand.NextFloat(-0.05f, 0.05f), Main.rand.NextFloat(-0.05f, 0.05f)),
+                Main.rand.Next(200, 400),
+                Main.rand.NextFloat(0.3f, 0.7f) * MistIntensity,
+                Main.rand.NextFloat(0.3f, 1.0f),
+                textureIndex
+            ));
+        }
+    }
+}
         
         private void InitializeMistParticles()
-        {
-            // Clear any existing particles
-            mistParticles.Clear();
-            
-            // Initialize with a baseline of particles
-           // Initialize with a baseline of particles
-            int initialParticles = (int)(MaxMistParticles * MistIntensity * 0.5f);
-            
-            for (int i = 0; i < initialParticles; i++)
-            {
-                // Create a new particle at a random position
-                float posX = Main.rand.Next(0, Main.maxTilesX * 16);
-                float posY = Main.rand.Next(0, Main.maxTilesY * 16);
-                
-                mistParticles.Add(new MistParticle(
-                    new Vector2(posX, posY),
-                    new Vector2(Main.rand.NextFloat(-0.05f, 0.05f), Main.rand.NextFloat(-0.05f, 0.05f)),
-                    Main.rand.Next(200, 400),
-                    Main.rand.NextFloat(0.3f, 0.7f) * MistIntensity,
-                    Main.rand.NextFloat(0.3f, 1.0f)
-                ));
-            }
-        }
+{
+    // Clear any existing particles
+    mistParticles.Clear();
+    
+    // Initialize with a baseline of particles
+    int initialParticles = (int)(MaxMistParticles * MistIntensity * 0.5f);
+    
+    for (int i = 0; i < initialParticles; i++)
+    {
+        // Create a new particle at a random position
+        float posX = Main.rand.Next(0, Main.maxTilesX * 16);
+        float posY = Main.rand.Next(0, Main.maxTilesY * 16);
+        
+        int textureIndex = Main.rand.Next(0, mistParticleTextures.Count);
+        
+        mistParticles.Add(new MistParticle(
+            new Vector2(posX, posY),
+            new Vector2(Main.rand.NextFloat(-0.05f, 0.05f), Main.rand.NextFloat(-0.05f, 0.05f)),
+            Main.rand.Next(200, 400),
+            Main.rand.NextFloat(0.3f, 0.7f) * MistIntensity,
+            Main.rand.NextFloat(0.3f, 1.0f),
+            textureIndex
+        ));
+    }
+}
         public void DrawMist(SpriteBatch spriteBatch)
+{
+    if (!Main.dedServ && MistActive && MistIntensity > 0)
+    {
+        // Apply global lighting tint during mist
+        if (MistIntensity > 0.1f)
         {
-            if (!Main.dedServ && MistActive && MistIntensity > 0)
+            // Darker during night, lighter during day
+            float dayFactor = Main.dayTime ? 0.7f : 0.4f;
+            float lightValue = MathHelper.Lerp(1f, dayFactor, MistIntensity * 0.7f);
+            Lighting.GlobalBrightness = lightValue;
+        }
+        
+        // Draw mist overlay
+        Color mistColor = Color.White * 0.2f * MistIntensity;
+        mistColor.A = (byte)(100 * MistIntensity);
+        
+        // Fill the screen with a light mist overlay
+        spriteBatch.Draw(
+            Terraria.GameContent.TextureAssets.MagicPixel.Value,
+            new Rectangle(0, 0, Main.screenWidth, Main.screenHeight),
+            null,
+            mistColor,
+            0f,
+            Vector2.Zero,
+            SpriteEffects.None,
+            0f
+        );
+        
+        // Draw individual mist particles
+        if (mistParticleTextures != null && mistParticleTextures.Count > 0)
+        {
+            foreach (var particle in mistParticles)
             {
-                // Apply global lighting tint during mist
-                if (MistIntensity > 0.1f)
+                // Only draw particles that are on screen
+                if (IsOnScreen(particle.Position))
                 {
-                    // Darker during night, lighter during day
-                    float dayFactor = Main.dayTime ? 0.7f : 0.4f;
-                    float lightValue = MathHelper.Lerp(1f, dayFactor, MistIntensity * 0.7f);
-                    Lighting.GlobalBrightness = lightValue;
-                }
-                
-                // Draw mist overlay
-                Color mistColor = Color.White * 0.2f * MistIntensity;
-                mistColor.A = (byte)(100 * MistIntensity);
-                
-                // Fill the screen with a light mist overlay
-                spriteBatch.Draw(
-                    Terraria.GameContent.TextureAssets.MagicPixel.Value,
-                    new Rectangle(0, 0, Main.screenWidth, Main.screenHeight),
-                    null,
-                    mistColor,
-                    0f,
-                    Vector2.Zero,
-                    SpriteEffects.None,
-                    0f
-                );
-                
-                // Draw individual mist particles
-                if (mistParticleTexture?.Value != null)
-                {
-                    foreach (var particle in mistParticles)
+                    // Get the correct texture based on the particle's texture index
+                    int textureIndex = particle.TextureIndex % mistParticleTextures.Count;
+                    Asset<Texture2D> currentTexture = mistParticleTextures[textureIndex];
+                    
+                    if (currentTexture?.Value != null)
                     {
-                        // Only draw particles that are on screen
-                        if (IsOnScreen(particle.Position))
-                        {
-                            Vector2 screenPos = particle.Position - Main.screenPosition;
-                            Color particleColor = Color.White * particle.Alpha * MistIntensity;
-                            
-                            spriteBatch.Draw(
-                                mistParticleTexture.Value,
-                                screenPos,
-                                null,
-                                particleColor,
-                                0f,
-                                mistParticleTexture.Size() * 0.5f,
-                                particle.Scale,
-                                SpriteEffects.None,
-                                0f
-                            );
-                        }
+                        Vector2 screenPos = particle.Position - Main.screenPosition;
+                        Color particleColor = Color.White * particle.Alpha * MistIntensity;
+                        
+                        spriteBatch.Draw(
+                            currentTexture.Value,
+                            screenPos,
+                            null,
+                            particleColor,
+                            0f,
+                            new Vector2(currentTexture.Width() * 0.5f, currentTexture.Height() * 0.5f),
+                            particle.Scale,
+                            SpriteEffects.None,
+                            0f
+                        );
                     }
                 }
             }
         }
+    }
+}
         
         private bool IsOnScreen(Vector2 position)
         {
@@ -354,24 +414,26 @@ namespace MistbornMod
         
         // Inner class for mist particles
         private class MistParticle
-        {
-            public Vector2 Position;
-            public Vector2 Velocity;
-            public int Lifetime;
-            public float Alpha;
-            public float Scale;
-            private int age = 0;
-            private float originalAlpha;
-            
-            public MistParticle(Vector2 position, Vector2 velocity, int lifetime, float alpha, float scale)
-            {
-                Position = position;
-                Velocity = velocity;
-                Lifetime = lifetime;
-                Alpha = alpha;
-                originalAlpha = alpha;
-                Scale = scale;
-            }
+{
+    public Vector2 Position;
+    public Vector2 Velocity;
+    public int Lifetime;
+    public float Alpha;
+    public float Scale;
+    private int age = 0;
+    private float originalAlpha;
+    public int TextureIndex; // Which mist texture to use
+    
+    public MistParticle(Vector2 position, Vector2 velocity, int lifetime, float alpha, float scale, int textureIndex)
+    {
+        Position = position;
+        Velocity = velocity;
+        Lifetime = lifetime;
+        Alpha = alpha;
+        originalAlpha = alpha;
+        Scale = scale;
+        TextureIndex = textureIndex;
+    }
             
             public void Update()
             {

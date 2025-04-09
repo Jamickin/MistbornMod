@@ -177,34 +177,61 @@ namespace MistbornMod.UI
             
             // Draw panel background
             Texture2D backgroundTexture = MistbornUISystem.MetalUIBackground.Value;
-            if (backgroundTexture != null)
-            {
-                // Draw a 9-slice panel with the calculated height
-                Utils.DrawSplicedPanel(
-                    spriteBatch,
-                    backgroundTexture,
-                    (int)_position.X,
-                    (int)_position.Y,
-                    (int)PANEL_WIDTH,
-                    (int)panelHeight,
-                    10, 10, 10, 10,
-                    Color.White
-                );
-            }
-            else
-            {
-                // Fallback: draw colored rectangle if texture is missing
-                spriteBatch.Draw(
-                    TextureAssets.MagicPixel.Value,
-                    new Rectangle((int)_position.X, (int)_position.Y, (int)PANEL_WIDTH, (int)panelHeight),
-                    null,
-                    new Color(75, 75, 75, 230),
-                    0f,
-                    Vector2.Zero,
-                    SpriteEffects.None,
-                    0f
-                );
-            }
+if (backgroundTexture != null)
+{
+    // Get texture dimensions to compute proper slice values
+    int texWidth = backgroundTexture.Width;
+    int texHeight = backgroundTexture.Height;
+    
+    // Determine border size based on texture dimensions
+    // Use approximately 15% of the texture size for borders, or 10 pixels minimum
+    int borderSize = Math.Max(10, Math.Min(texWidth / 7, texHeight / 7));
+    
+    // Draw a 9-slice panel with the calculated height and dynamic border size
+    Utils.DrawSplicedPanel(
+        spriteBatch,
+        backgroundTexture,
+        (int)_position.X,
+        (int)_position.Y,
+        (int)PANEL_WIDTH,
+        (int)panelHeight,
+        borderSize, borderSize, borderSize, borderSize,
+        Color.White * 0.95f // Slightly transparent to blend better
+    );
+    
+    // Draw a subtle inner border/shadow
+    Rectangle innerBorder = new Rectangle(
+        (int)_position.X + 2, 
+        (int)_position.Y + 2, 
+        (int)PANEL_WIDTH - 4, 
+        (int)panelHeight - 4
+    );
+    
+    spriteBatch.Draw(
+        TextureAssets.MagicPixel.Value,
+        innerBorder,
+        null,
+        new Color(0, 0, 0, 15), // Very subtle shadow
+        0f,
+        Vector2.Zero,
+        SpriteEffects.None,
+        0f
+    );
+}
+else
+{
+    // Fallback: draw colored rectangle if texture is missing
+    spriteBatch.Draw(
+        TextureAssets.MagicPixel.Value,
+        new Rectangle((int)_position.X, (int)_position.Y, (int)PANEL_WIDTH, (int)panelHeight),
+        null,
+        new Color(75, 75, 75, 230),
+        0f,
+        Vector2.Zero,
+        SpriteEffects.None,
+        0f
+    );
+}
             
             // Draw panel title
             string title = Language.GetTextValue("Mods.MistbornMod.UI.MetalReserves.Title");

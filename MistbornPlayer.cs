@@ -271,6 +271,8 @@ namespace MistbornMod
             {
                 Main.NewText("You don't have the ability to burn metals.", 255, 100, 100);
                 SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+                return;
+            }
                
             // Skip Steel, Iron, and Chromium as they use the hold mechanic
             if (metal == MetalType.Steel || metal == MetalType.Iron || metal == MetalType.Chromium) return;
@@ -308,7 +310,7 @@ namespace MistbornMod
                 Player.ClearBuff(buffId);
             }
         }
-        }
+        
 
         public override void PostUpdate()
         {
