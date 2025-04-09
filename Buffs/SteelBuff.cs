@@ -376,31 +376,59 @@ namespace MistbornMod.Buffs
                    tileType == ModContent.TileType<Tiles.ZincOreTile>();
         }
         
-        private bool IsMetallicObject(int tileType) {
-            // Check for various metal objects
-            return tileType == TileID.MetalBars ||           // Metal bars
-                   tileType == TileID.Anvils ||              // Anvils (regular)
-                   tileType == TileID.MythrilAnvil ||        // Mythril anvil
-                   tileType == TileID.AdamantiteForge ||     // Adamantite forge
-                   tileType == TileID.Furnaces ||            // Furnaces
-                   tileType == TileID.Hellforge ||           // Hellforge
-                   tileType == TileID.Chain ||               // Chains
-                   tileType == TileID.Bathtubs ||            // Bathtubs
-                   tileType == TileID.Chandeliers ||         // Chandeliers
-                   tileType == TileID.Cannon ||              // Cannons
-                   tileType == TileID.LandMine ||            // Land mines
-                   tileType == TileID.Traps ||               // Traps
-                   tileType == TileID.Boulder ||             // Boulders
-                   tileType == TileID.IronBrick ||           // Iron bricks
-                   tileType == TileID.LeadBrick ||           // Lead bricks
-                   tileType == TileID.CopperBrick ||         // Copper bricks
-                   tileType == TileID.TinBrick ||            // Tin bricks
-                   tileType == TileID.SilverBrick ||         // Silver bricks
-                   tileType == TileID.TungstenBrick ||       // Tungsten bricks
-                   tileType == TileID.GoldBrick ||           // Gold bricks
-                   tileType == TileID.PlatinumBrick ||       // Platinum bricks
-                   tileType == TileID.AlchemyTable;          // Alchemy table
-        }
+        private bool IsMetallicObject(int tileType)
+{
+    // Check for various metal objects
+    return tileType == TileID.MetalBars ||           // Metal bars
+           tileType == TileID.Anvils ||              // Anvils (regular)
+           tileType == TileID.MythrilAnvil ||        // Mythril anvil
+           tileType == TileID.AdamantiteForge ||     // Adamantite forge
+           tileType == TileID.Furnaces ||            // Furnaces
+           tileType == TileID.Hellforge ||           // Hellforge
+           tileType == TileID.Chain ||               // Chains
+           tileType == TileID.Bathtubs ||            // Bathtubs
+           tileType == TileID.Chandeliers ||         // Chandeliers
+           tileType == TileID.Cannon ||              // Cannons
+           tileType == TileID.LandMine ||            // Land mines
+           tileType == TileID.Traps ||               // Traps
+           tileType == TileID.Boulder ||             // Boulders
+           tileType == TileID.IronBrick ||           // Iron bricks
+           tileType == TileID.LeadBrick ||           // Lead bricks
+           tileType == TileID.CopperBrick ||         // Copper bricks
+           tileType == TileID.TinBrick ||            // Tin bricks
+           tileType == TileID.SilverBrick ||         // Silver bricks
+           tileType == TileID.TungstenBrick ||       // Tungsten bricks
+           tileType == TileID.GoldBrick ||           // Gold bricks
+           tileType == TileID.PlatinumBrick ||       // Platinum bricks
+           tileType == TileID.AlchemyTable ||        // Alchemy table
+           // Corrected chest references:
+           tileType == TileID.Containers ||          // Container group 1 (various chests)
+           tileType == TileID.Containers2 ||         // Container group 2 (more chests)
+           tileType == TileID.FakeContainers ||      // Fake container group 1
+           tileType == TileID.FakeContainers2 ||     // Fake container group 2
+          
+           // Other metal objects:
+           tileType == TileID.MetalBars ||           // Metal bars again (for emphasis)
+           tileType == TileID.GoldBirdCage ||        // Gold bird cage
+           tileType == TileID.Campfire ||            // Campfire (iron grate underneath)
+           // Fixed missing IDs (using correct TileID references):
+           tileType == TileID.Kegs ||                // Kegs (metal bands)
+           tileType == TileID.GrandfatherClocks ||   // Grandfather clocks (gears)
+           tileType == TileID.Lamps ||               // Lamps (metal components)
+           tileType == TileID.WaterFountain ||       // Water fountain
+           tileType == TileID.TrashCan ||            // Trash can
+           tileType == TileID.Sawmill ||             // Sawmill (metal parts)
+           tileType == TileID.Lever ||               // Lever
+           tileType == TileID.Switches ||            // Switches
+           tileType == TileID.PressurePlates ||      // Pressure plates
+           tileType == TileID.ClosedDoor ||          // Doors (metal components)
+           tileType == TileID.OpenDoor ||            // Open doors (metal components)
+           tileType == TileID.DisplayDoll ||         // Display doll (metal stand)
+           tileType == TileID.WeaponsRack ||         // Weapons rack
+           tileType == TileID.TargetDummy ||         // Training dummy (correct ID)
+           tileType == TileID.MinecartTrack;         // Minecart track
+}
+
         
         private void DrawLineWithDust(Vector2 start, Vector2 end, int dustType, float density = 0.1f) {
              if (Vector2.DistanceSquared(start, end) < 16f * 16f) return;

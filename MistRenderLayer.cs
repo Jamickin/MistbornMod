@@ -24,14 +24,7 @@ namespace MistbornMod
                     delegate
                     {
                         // Only draw if mist is active and we're in the world
-                        if (Main.gameMenu || Main.LocalPlayer == null || Main.LocalPlayer.dead) return true;
                         
-                        // Check if mist is active via MistbornAscension system
-                        if (MistbornAscension.Instance != null && MistbornAscension.Instance.MistActive)
-                        {
-                            // Draw the mist effect
-                            MistbornAscension.Instance.DrawMist(Main.spriteBatch);
-                        }
                         
                         return true;
                     },

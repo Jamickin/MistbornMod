@@ -20,3 +20,5 @@ and you can store up to 6 vials worth of metals total. Toggle the metal reserves
 Find metal vials and create your own at alchemy stations. Discover metallic ores in the world to brew new allomantic metals.
 
 Survive, fight, and navigate like a true Mistborn!
+
+Version 0.6 - UI changes and proper implementations of metals. Ascension via Lerasium now available! Recipes and new Ore coming!

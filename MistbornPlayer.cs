@@ -171,9 +171,7 @@ namespace MistbornMod
                 IsMistborn = tag.GetBool("Mistborn_IsMistborn");
                 
                 // If player is Mistborn, activate the mist
-                if (IsMistborn && MistbornAscension.Instance != null) {
-                    MistbornAscension.Instance.ActivateMist();
-                }
+                
         }
         }
 
