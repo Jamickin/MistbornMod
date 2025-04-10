@@ -13,7 +13,6 @@ namespace MistbornMod
         public static ModKeybind AtiumToggleHotkey { get; private set; }
         public static ModKeybind ChromiumToggleHotkey { get; private set; } // Added Chromium hotkey
         public static ModKeybind FlareToggleHotkey { get; private set; }
-        public static ModKeybind UIToggleHotkey { get; private set; }
         public static ModKeybind CopperToggleHotkey { get; private set; }
         public static ModKeybind BronzeToggleHotkey { get; private set; }   
 
@@ -36,8 +35,6 @@ namespace MistbornMod
             // Add the flare toggle keybind - use Alt as default since it's commonly available
             FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
             
-            // Add UI toggle keybind
-            UIToggleHotkey = KeybindLoader.RegisterKeybind(this, "Toggle Metal UI", "U");
         }
 
         // It's good practice to unload static variables
@@ -54,7 +51,6 @@ namespace MistbornMod
             FlareToggleHotkey = null;
             CopperToggleHotkey = null;
             BronzeToggleHotkey = null;
-            UIToggleHotkey = null;
         }
     }
 }

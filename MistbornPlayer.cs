@@ -26,6 +26,9 @@ namespace MistbornMod
         public bool IsGeneratingCoppercloud { get; set; } = false;
         public float CoppercloudRadius { get; set; } = 0f;
         public bool IsBronzeScanning { get; set; } = false;
+
+
+
         public bool IsMistborn { get; set; } = false;
 
         // Flaring mechanic
@@ -74,8 +77,6 @@ namespace MistbornMod
     }
 }
         
-        // UI visibility flag
-        public bool ShowMetalUI { get; private set; } = true;
 
         public override void Initialize()
         {
@@ -96,7 +97,6 @@ namespace MistbornMod
             IsFlaring = false;
             FlareEffectTimer = 0;
             FlareIntensity = 0f;
-            ShowMetalUI = true;
         }
         
         public override void ResetEffects()
@@ -121,7 +121,6 @@ namespace MistbornMod
             tag["Mistborn_ReserveMetals"] = metalNames;
             tag["Mistborn_ReserveValues"] = reserveValues;
             tag["Mistborn_IsFlaring"] = IsFlaring;
-            tag["Mistborn_ShowMetalUI"] = ShowMetalUI;
             tag["Mistborn_IsMistborn"] = IsMistborn; // Save Mistborn status
         }
 
@@ -139,7 +138,6 @@ namespace MistbornMod
             IsActivelyIronPulling = false;
             IsActivelyChromiumStripping = false;  // Reset Chromium flag
             IsFlaring = false;
-            ShowMetalUI = true;
             IsMistborn = false; // Reset Mistborn status
 
 
@@ -164,9 +162,7 @@ namespace MistbornMod
                 IsFlaring = tag.GetBool("Mistborn_IsFlaring");
             }
             
-            if (tag.ContainsKey("Mistborn_ShowMetalUI")) {
-                ShowMetalUI = tag.GetBool("Mistborn_ShowMetalUI");
-            }
+          
              if (tag.ContainsKey("Mistborn_IsMistborn")) {
                 IsMistborn = tag.GetBool("Mistborn_IsMistborn");
                 
@@ -177,14 +173,6 @@ namespace MistbornMod
 
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
-            // Toggle metals like Pewter, Tin, Brass, Zinc, Atium
-            if (MistbornMod.IronToggleHotkey?.JustPressed ?? false) { 
-                // Iron is now a hold mechanic, not a toggle
-                int buffId = GetBuffIDForMetal(MetalType.Iron);
-                if (buffId != -1 && MetalReserves.GetValueOrDefault(MetalType.Iron, 0) > 0) {
-                    SoundEngine.PlaySound(SoundID.MaxMana, Player.position);
-                }
-            }
             if (MistbornMod.PewterToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Pewter); }
             if (MistbornMod.TinToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Tin); }
             if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
@@ -201,11 +189,7 @@ namespace MistbornMod
                 }
             }
 
-            // Toggle UI visibility
-            if (MistbornMod.UIToggleHotkey?.JustPressed ?? false) {
-                ShowMetalUI = !ShowMetalUI;
-                SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
-            }
+           
 
             // Handle Flare Toggle
             if (MistbornMod.FlareToggleHotkey?.JustPressed ?? false) {
