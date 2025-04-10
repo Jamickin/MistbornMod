@@ -1,4 +1,4 @@
-// Simplified MistbornAscension class that uses Terraria's native fog system
+// Update the MakePlayerMistborn method in MistbornAscension.cs
 
 using Terraria;
 using Terraria.ID;
@@ -52,8 +52,15 @@ namespace MistbornMod
                 // Only perform Ascension if the player isn't already Mistborn
                 if (!modPlayer.IsMistborn)
                 {
-                    // Set the player as Mistborn
+                    // Set the player as Mistborn and clear Misting status
                     modPlayer.IsMistborn = true;
+                    
+                    // Keep track of whether they were a Misting before
+                    bool wasMisting = modPlayer.IsMisting;
+                    
+                    // Clear Misting flags
+                    modPlayer.IsMisting = false;
+                    modPlayer.MistingMetal = null;
                     
                     // Play ascension sound
                     SoundEngine.PlaySound(SoundID.Item4, player.position);
@@ -74,7 +81,11 @@ namespace MistbornMod
                     }
                     
                     // Show message to the player
-                    Main.NewText("You have ascended as a Mistborn!", 255, 255, 100);
+                    if (!wasMisting)
+                    {
+                        Main.NewText("You have ascended as a Mistborn!", 255, 255, 100);
+                    }
+                    // Note: Skip message if wasMisting, as LerasiumBead will show a specialized message
                     
                     // Grant starting vials
                     GrantStartingVials(player);
@@ -91,35 +102,35 @@ namespace MistbornMod
             player.QuickSpawnItem(player.GetSource_GiftOrReward(), ModContent.ItemType<Items.SteelVial>(), 2);
         }
 
+        // Rest of the existing methods...
         public override void PreUpdatePlayers()
-{
-    // Check if at least one player is Mistborn
-    bool anyMistborn = false;
-    
-    for (int i = 0; i < Main.maxPlayers; i++)
-    {
-        Player player = Main.player[i];
-        if (player.active)
         {
-            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-            if (modPlayer.IsMistborn)
+            // Check if at least one player is Mistborn
+            bool anyMistborn = false;
+            
+            for (int i = 0; i < Main.maxPlayers; i++)
             {
-                anyMistborn = true;
-                break;
+                Player player = Main.player[i];
+                if (player.active)
+                {
+                    MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+                    if (modPlayer.IsMistborn)
+                    {
+                        anyMistborn = true;
+                        break;
+                    }
+                }
             }
-        }
-    }
-    
-    // Night check - only apply effects at night
-    bool isNight = !Main.dayTime;
-    
-    // Apply graveyard effect if player is Mistborn AND it's night
-    if (anyMistborn && isNight)
-    {
-        // Set the counts extremely high to ensure the effect triggers
-        Main.SceneMetrics.GraveyardTileCount = 100;
-    }
-
+            
+            // Night check - only apply effects at night
+            bool isNight = !Main.dayTime;
+            
+            // Apply graveyard effect if player is Mistborn AND it's night
+            if (anyMistborn && isNight)
+            {
+                // Set the counts extremely high to ensure the effect triggers
+                Main.SceneMetrics.GraveyardTileCount = 100;
+            }
             else
             {
                 // Let the normal graveyard system work during daytime
@@ -131,34 +142,34 @@ namespace MistbornMod
                 {
                     Main.GraveyardVisualIntensity = 0f;
                     Main.SceneMetrics.GraveyardTileCount = 0;
-
                 }
                 // Otherwise let the normal game mechanics handle it
                 // (this allows real graveyards to still work normally)
             }
         }
+        
         public override void PostUpdateEverything()
-{
-    // Check again to ensure effect remains after other updates
-    bool anyMistborn = false;
-    bool isNight = !Main.dayTime;
-    
-    for (int i = 0; i < Main.maxPlayers; i++)
-    {
-        Player player = Main.player[i];
-        if (player.active && player.GetModPlayer<MistbornPlayer>().IsMistborn)
         {
-            anyMistborn = true;
-            break;
+            // Check again to ensure effect remains after other updates
+            bool anyMistborn = false;
+            bool isNight = !Main.dayTime;
+            
+            for (int i = 0; i < Main.maxPlayers; i++)
+            {
+                Player player = Main.player[i];
+                if (player.active && player.GetModPlayer<MistbornPlayer>().IsMistborn)
+                {
+                    anyMistborn = true;
+                    break;
+                }
+            }
+            
+            if (anyMistborn && isNight)
+            {
+                Main.SceneMetrics.GraveyardTileCount = 100;
+                // Force visual intensity directly
+                Main.GraveyardVisualIntensity = 1f;
+            }
         }
-    }
-    
-    if (anyMistborn && isNight)
-    {
-        Main.SceneMetrics.GraveyardTileCount = 100;
-        // Force visual intensity directly
-        Main.GraveyardVisualIntensity = 1f;
-    }
-}
     }
 }

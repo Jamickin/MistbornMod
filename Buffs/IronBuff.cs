@@ -24,7 +24,7 @@ namespace MistbornMod.Buffs
             Metal = MetalType.Iron; 
         }
 
-       public override void Update(Player player, ref int buffIndex)
+public override void ApplyBuffEffect(Player player, bool isFlaring)
         {
             // Get the MistbornPlayer instance to check flaring status
             MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();

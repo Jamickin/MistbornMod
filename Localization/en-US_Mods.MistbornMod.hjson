@@ -115,7 +115,33 @@ Items: {
 		DisplayName: Atium Bead
 		Tooltip: ""
 	}
+	
+	MetalTester: {
+		DisplayName: Metal Tester
+		Tooltip: Tests your Allomantic affinity\nUse this to discover what metal you can burn
+	}
 }
+
+UI: {
+	MetalReserves: {
+		Title: Metal Reserves
+		TotalCapacity: Total Capacity
+		VialsUsed: Vials Used: {0}/6
+		MistingStatus: {0} - {1}
+	}
+	
+	MistingNames: {
+		Iron: Lurcher
+		Steel: Coinshot
+		Tin: Tineye
+		Pewter: Thug
+		Zinc: Rioter
+		Brass: Soother
+		Copper: Smoker
+		Bronze: Seeker
+	}
+}
+
 
 Keybinds: {
 	"Burn Tin.DisplayName": Burn Tin

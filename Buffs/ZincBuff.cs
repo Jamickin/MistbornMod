@@ -17,13 +17,13 @@ namespace MistbornMod.Buffs
              Metal = MetalType.Zinc; 
         }
 
-        public override void Update(Player player, ref int buffIndex)
+        public override void ApplyBuffEffect(Player player, bool isFlaring)
         {
-            base.Update(player, ref buffIndex);
+            // Remove the base.Update call - it's no longer needed
+            // The base class now handles checking if the metal is burning
             
-            // Get the MistbornPlayer instance to check flaring status
-            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-            float multiplier = modPlayer.IsFlaring ? 2.0f : 1.0f;
+            // Note that isFlaring is passed in as a parameter now
+            float multiplier = isFlaring ? 2.0f : 1.0f;
             
             // Calculate dynamic values based on flaring
             float currentRiotRange = RiotRange * multiplier;
@@ -43,7 +43,7 @@ namespace MistbornMod.Buffs
                         npc.AddBuff(BuffID.Ichor, currentDebuffDuration);
                         
                         // When flaring, also apply additional debuffs to represent more intense rioting
-                        if (modPlayer.IsFlaring)
+                        if (isFlaring)
                         {
                             // Apply Confusion to represent mental instability from intense rioting
                             npc.AddBuff(BuffID.Confused, currentDebuffDuration / 2);
@@ -53,10 +53,10 @@ namespace MistbornMod.Buffs
                         }
                         
                         // More intense dust effects when flaring
-                        if (Main.rand.NextBool(modPlayer.IsFlaring ? 3 : 6)) 
+                        if (Main.rand.NextBool(isFlaring ? 3 : 6)) 
                         {
-                            int dustType = modPlayer.IsFlaring ? DustID.Blood : DustID.FireworksRGB;
-                            float scale = modPlayer.IsFlaring ? 1.2f : 0.8f;
+                            int dustType = isFlaring ? DustID.Blood : DustID.FireworksRGB;
+                            float scale = isFlaring ? 1.2f : 0.8f;
                             
                             Dust.NewDust(
                                 npc.position, 
@@ -75,7 +75,7 @@ namespace MistbornMod.Buffs
             }
             
             // Visual effect around player to show zinc burning
-            if (modPlayer.IsFlaring && Main.rand.NextBool(8))
+            if (isFlaring && Main.rand.NextBool(8))
             {
                 Vector2 dustPos = player.Center + Main.rand.NextVector2Circular(32f, 32f);
                 Dust.NewDustPerfect(dustPos, DustID.Torch, Vector2.Zero, 150, Color.Red, 0.7f);

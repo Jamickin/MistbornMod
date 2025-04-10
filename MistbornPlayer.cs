@@ -27,13 +27,44 @@ namespace MistbornMod
         public float CoppercloudRadius { get; set; } = 0f;
         public bool IsBronzeScanning { get; set; } = false;
 
-
-
+        // Mistborn/Misting status
         public bool IsMistborn { get; set; } = false;
+        public bool IsMisting { get; set; } = false;
+        public MetalType? MistingMetal { get; set; } = null; // The one metal a Misting can burn
+        public bool HasDiscoveredMistingAbility { get; set; } = false;
 
         // Flaring mechanic
         public bool IsFlaring { get; private set; } = false;
+        // Add this to MistbornPlayer class
+public bool HasBeenInitialized { get; set; } = false;
 
+// Then modify initialization method
+private void InitializeRandomMisting()
+{
+    if (HasBeenInitialized) return;
+    
+    // All metal types except Atium and Chromium
+    MetalType[] validMistingTypes = new MetalType[]
+    {
+        MetalType.Iron,
+        MetalType.Steel,
+        MetalType.Tin,
+        MetalType.Pewter,
+        MetalType.Zinc,
+        MetalType.Brass,
+        MetalType.Copper,
+        MetalType.Bronze
+    };
+    
+    // Select random metal
+    MistingMetal = validMistingTypes[Main.rand.Next(validMistingTypes.Length)];
+    IsMisting = true;
+    HasDiscoveredMistingAbility = false;
+    HasBeenInitialized = true;
+    
+    // Give a hint message without revealing the exact ability
+    Main.NewText("You feel a strange connection to the mists...", 200, 230, 255);
+}
         // Metal reserve constants
         public const int METAL_VIAL_AMOUNT = 3600; // 60 seconds (60 ticks per second) per vial
         // Removed the individual metal cap to allow stacking multiple vials of the same metal
@@ -47,36 +78,92 @@ namespace MistbornMod
         public float FlareIntensity { get; private set; } = 0f;
 
         public bool IsHiddenByCoppercloud 
-{ 
-    get 
-    {
-        // Check if self-cloaked
-        if (IsGeneratingCoppercloud) return true;
-        
-        // Skip the rest in single player
-        if (Main.netMode == NetmodeID.SinglePlayer) return false;
-        
-        // Check if within another player's coppercloud
-        for (int i = 0; i < Main.maxPlayers; i++)
-        {
-            Player otherPlayer = Main.player[i];
-            if (!otherPlayer.active || otherPlayer == Player) continue;
-            
-            MistbornPlayer otherModPlayer = otherPlayer.GetModPlayer<MistbornPlayer>();
-            if (otherModPlayer.IsGeneratingCoppercloud)
+        { 
+            get 
             {
-                float distSq = Vector2.DistanceSquared(Player.Center, otherPlayer.Center);
-                if (distSq < otherModPlayer.CoppercloudRadius * otherModPlayer.CoppercloudRadius)
+                // Check if self-cloaked
+                if (IsGeneratingCoppercloud) return true;
+                
+                // Skip the rest in single player
+                if (Main.netMode == NetmodeID.SinglePlayer) return false;
+                
+                // Check if within another player's coppercloud
+                for (int i = 0; i < Main.maxPlayers; i++)
                 {
-                    return true;
+                    Player otherPlayer = Main.player[i];
+                    if (!otherPlayer.active || otherPlayer == Player) continue;
+                    
+                    MistbornPlayer otherModPlayer = otherPlayer.GetModPlayer<MistbornPlayer>();
+                    if (otherModPlayer.IsGeneratingCoppercloud)
+                    {
+                        float distSq = Vector2.DistanceSquared(Player.Center, otherPlayer.Center);
+                        if (distSq < otherModPlayer.CoppercloudRadius * otherModPlayer.CoppercloudRadius)
+                        {
+                            return true;
+                        }
+                    }
                 }
+                
+                return false;
             }
         }
         
-        return false;
-    }
+        // Initialize player as a random Misting on first spawn
+        public override void OnEnterWorld()
+{
+            // If new character and not already a Misting or Mistborn
+            if (!IsMistborn && !IsMisting && MistingMetal == null)
+            {
+                InitializeRandomMisting();
+            }
 }
         
+        
+        
+        private void RevealMistingAbility()
+        {
+            HasDiscoveredMistingAbility = true;
+            string mistingName = GetMistingName(MistingMetal.Value);
+            
+            // Visual effect
+            for (int i = 0; i < 30; i++)
+            {
+                Dust.NewDust(
+                    Player.position,
+                    Player.width,
+                    Player.height,
+                    DustID.MagicMirror,
+                    Main.rand.NextFloat(-1f, 1f),
+                    Main.rand.NextFloat(-1f, 1f),
+                    150,
+                    default,
+                    1.2f
+                );
+            }
+            
+            // Reveal message
+            Main.NewText($"You've discovered your Allomantic ability! You are a {mistingName}!", 255, 220, 100);
+            Main.NewText($"You can burn {MistingMetal} metal. Press {GetHotkeyDisplayForMetal(MistingMetal.Value)} to activate it.", 200, 255, 200);
+            
+            // Sound effect
+            SoundEngine.PlaySound(SoundID.Item4, Player.position);
+        }
+        
+        public string GetMistingName(MetalType metal)
+        {
+            switch (metal)
+            {
+                case MetalType.Iron: return "Lurcher";
+                case MetalType.Steel: return "Coinshot";
+                case MetalType.Tin: return "Tineye";
+                case MetalType.Pewter: return "Thug";
+                case MetalType.Zinc: return "Rioter";
+                case MetalType.Brass: return "Soother";
+                case MetalType.Copper: return "Smoker";
+                case MetalType.Bronze: return "Seeker";
+                default: return "Misting";
+            }
+        }
 
         public override void Initialize()
         {
@@ -104,16 +191,16 @@ namespace MistbornMod
         }
 
         private void UpdateBuffVisibility()
-{
-    foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
-    {
-        int buffId = GetBuffIDForMetal(metal);
-        if (buffId != -1 && MetalReserves.TryGetValue(metal, out int reserves) && reserves > 0)
         {
-            Player.AddBuff(buffId, 5);
+            foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
+            {
+                int buffId = GetBuffIDForMetal(metal);
+                if (buffId != -1 && MetalReserves.TryGetValue(metal, out int reserves) && reserves > 0)
+                {
+                    Player.AddBuff(buffId, 5);
+                }
+            }
         }
-    }
-}
         
         public override void ResetEffects()
         {
@@ -138,6 +225,9 @@ namespace MistbornMod
             tag["Mistborn_ReserveValues"] = reserveValues;
             tag["Mistborn_IsFlaring"] = IsFlaring;
             tag["Mistborn_IsMistborn"] = IsMistborn; // Save Mistborn status
+            tag["Mistborn_IsMisting"] = IsMisting;
+            tag["Mistborn_MistingMetal"] = MistingMetal.HasValue ? (int)MistingMetal.Value : -1;
+            tag["Mistborn_HasDiscoveredMistingAbility"] = HasDiscoveredMistingAbility;
         }
 
         public override void LoadData(TagCompound tag)
@@ -155,7 +245,9 @@ namespace MistbornMod
             IsActivelyChromiumStripping = false;  // Reset Chromium flag
             IsFlaring = false;
             IsMistborn = false; // Reset Mistborn status
-
+            IsMisting = false; // Reset Misting status
+            MistingMetal = null;
+            HasDiscoveredMistingAbility = false;
 
             if (tag.ContainsKey("Mistborn_ReserveMetals") && tag.ContainsKey("Mistborn_ReserveValues")) {
                 var metalNames = tag.Get<List<string>>("Mistborn_ReserveMetals");
@@ -178,44 +270,110 @@ namespace MistbornMod
                 IsFlaring = tag.GetBool("Mistborn_IsFlaring");
             }
             
-          
-             if (tag.ContainsKey("Mistborn_IsMistborn")) {
+            if (tag.ContainsKey("Mistborn_IsMistborn")) {
                 IsMistborn = tag.GetBool("Mistborn_IsMistborn");
-                
-                // If player is Mistborn, activate the mist
-                
-        }
+            }
+            
+            if (tag.ContainsKey("Mistborn_IsMisting")) {
+                IsMisting = tag.GetBool("Mistborn_IsMisting");
+            }
+            
+            if (tag.ContainsKey("Mistborn_MistingMetal")) {
+                int metalTypeValue = tag.GetInt("Mistborn_MistingMetal");
+                MistingMetal = metalTypeValue >= 0 ? (MetalType?)metalTypeValue : null;
+            }
+            
+            if (tag.ContainsKey("Mistborn_HasDiscoveredMistingAbility")) {
+                HasDiscoveredMistingAbility = tag.GetBool("Mistborn_HasDiscoveredMistingAbility");
+            }
         }
 
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
-            if (MistbornMod.PewterToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Pewter); }
-            if (MistbornMod.TinToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Tin); }
-            if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
-            if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Zinc); }
-            if (MistbornMod.AtiumToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Atium); }
-            if (MistbornMod.CopperToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Copper); }
-            if (MistbornMod.BronzeToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Bronze); }
-            
-            // Chromium is now a hold mechanic like Iron/Steel, not a toggle
-            if (MistbornMod.ChromiumToggleHotkey?.JustPressed ?? false) { 
-                int buffId = GetBuffIDForMetal(MetalType.Chromium);
-                if (buffId != -1 && MetalReserves.GetValueOrDefault(MetalType.Chromium, 0) > 0) {
-                    SoundEngine.PlaySound(SoundID.MaxMana, Player.position);
+            // Only allow the appropriate hotkey for Mistings
+            if (IsMisting && !IsMistborn && MistingMetal.HasValue)
+            {
+                // Only enable the hotkey for their specific metal
+                switch (MistingMetal.Value)
+                {
+                    case MetalType.Iron:
+                        IsActivelyIronPulling = MistbornMod.IronToggleHotkey?.Current ?? false;
+                        break;
+                    case MetalType.Steel:
+                        IsActivelySteelPushing = MistbornMod.SteelToggleHotkey?.Current ?? false;
+                        break;
+                    case MetalType.Pewter:
+                        if (MistbornMod.PewterToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Pewter);
+                        break;
+                    case MetalType.Tin:
+                        if (MistbornMod.TinToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Tin);
+                        break;
+                    case MetalType.Brass:
+                        if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Brass);
+                        break;
+                    case MetalType.Zinc:
+                        if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Zinc);
+                        break;
+                    case MetalType.Bronze:
+                        if (MistbornMod.BronzeToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Bronze);
+                        break;
+                    case MetalType.Copper:
+                        if (MistbornMod.CopperToggleHotkey?.JustPressed ?? false) ToggleMetal(MetalType.Copper);
+                        break;
+                }
+                
+                // Handle flaring only for the metal they can burn
+                if (MistbornMod.FlareToggleHotkey?.JustPressed ?? false)
+                {
+                    bool canFlare = false;
+                    
+                    if ((MistingMetal == MetalType.Steel && IsActivelySteelPushing) ||
+                        (MistingMetal == MetalType.Iron && IsActivelyIronPulling) ||
+                        (BurningMetals.TryGetValue(MistingMetal.Value, out bool burning) && burning))
+                    {
+                        canFlare = true;
+                    }
+                    
+                    if (canFlare)
+                    {
+                        ToggleFlaring();
+                    }
+                    else
+                    {
+                        Main.NewText("You must be burning your metal to flare it!", 255, 100, 100);
+                        SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+                    }
                 }
             }
+            else
+            {
+                // Full Mistborn has access to all metals
+                if (MistbornMod.PewterToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Pewter); }
+                if (MistbornMod.TinToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Tin); }
+                if (MistbornMod.BrassToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Brass); }
+                if (MistbornMod.ZincToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Zinc); }
+                if (MistbornMod.AtiumToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Atium); }
+                if (MistbornMod.CopperToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Copper); }
+                if (MistbornMod.BronzeToggleHotkey?.JustPressed ?? false) { ToggleMetal(MetalType.Bronze); }
+                
+                // Chromium is now a hold mechanic like Iron/Steel, not a toggle
+                if (MistbornMod.ChromiumToggleHotkey?.JustPressed ?? false) { 
+                    int buffId = GetBuffIDForMetal(MetalType.Chromium);
+                    if (buffId != -1 && MetalReserves.GetValueOrDefault(MetalType.Chromium, 0) > 0) {
+                        SoundEngine.PlaySound(SoundID.MaxMana, Player.position);
+                    }
+                }
 
-           
+                // Handle Flare Toggle
+                if (MistbornMod.FlareToggleHotkey?.JustPressed ?? false) {
+                    ToggleFlaring();
+                }
 
-            // Handle Flare Toggle
-            if (MistbornMod.FlareToggleHotkey?.JustPressed ?? false) {
-                ToggleFlaring();
+                // Handle Held Metal mechanics
+                IsActivelySteelPushing = MistbornMod.SteelToggleHotkey?.Current ?? false;
+                IsActivelyIronPulling = MistbornMod.IronToggleHotkey?.Current ?? false;
+                IsActivelyChromiumStripping = MistbornMod.ChromiumToggleHotkey?.Current ?? false;  // Handle Chromium as a held key
             }
-
-            // Handle Held Metal mechanics
-            IsActivelySteelPushing = MistbornMod.SteelToggleHotkey?.Current ?? false;
-            IsActivelyIronPulling = MistbornMod.IronToggleHotkey?.Current ?? false;
-            IsActivelyChromiumStripping = MistbornMod.ChromiumToggleHotkey?.Current ?? false;  // Handle Chromium as a held key
         }
 
         // Toggle flaring state
@@ -265,9 +423,18 @@ namespace MistbornMod
         // Toggles metals like Pewter, Tin, Brass, Zinc, Atium (NOT Steel, Iron, or Chromium)
         private void ToggleMetal(MetalType metal)
         {
-            if (!IsMistborn)
+            // Check if player has the ability to burn this metal
+            if (!IsMistborn && (!IsMisting || MistingMetal != metal))
             {
-                Main.NewText("You don't have the ability to burn metals.", 255, 100, 100);
+                // If they're a Misting but try to burn the wrong metal
+                if (IsMisting && MistingMetal.HasValue)
+                {
+                    Main.NewText($"As a {GetMistingName(MistingMetal.Value)}, you can only burn {MistingMetal}.", 255, 150, 100);
+                }
+                else
+                {
+                    Main.NewText("You don't have the ability to burn metals.", 255, 100, 100);
+                }
                 SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
                 return;
             }
@@ -503,7 +670,7 @@ namespace MistbornMod
                      case MetalType.Brass: return ModContent.BuffType<Buffs.BrassBuff>();
                      case MetalType.Zinc: return ModContent.BuffType<Buffs.ZincBuff>();
                      case MetalType.Atium: return ModContent.BuffType<Buffs.AtiumBuff>();
-                     case MetalType.Chromium: return ModContent.BuffType<Buffs.ChromiumBuff>();
+case MetalType.Chromium: return ModContent.BuffType<Buffs.ChromiumBuff>();
                      case MetalType.Copper: return ModContent.BuffType<Buffs.CopperBuff>();
                      case MetalType.Bronze: return ModContent.BuffType<Buffs.BronzeBuff>();
                      default: return -1;
@@ -514,27 +681,52 @@ namespace MistbornMod
         // Adds reserves from a vial, capped at the maximum total reserves
         public void DrinkMetalVial(MetalType metal, int durationValue)
         {
-            if (!IsMistborn)
+            // Players without powers can't drink metals effectively
+            if (!IsMistborn && !IsMisting)
             {
                 Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
                 SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
                 return;
             }
+            
+            // Misting can only drink their specific metal
+            if (IsMisting && !IsMistborn && metal != MistingMetal)
+            {
+                // If they haven't discovered their ability yet, give them a hint
+                if (!HasDiscoveredMistingAbility)
+                {
+                    Main.NewText("This metal feels wrong in your body. Try another...", 255, 200, 100);
+                }
+                else
+                {
+                    Main.NewText($"As a {GetMistingName(MistingMetal.Value)}, you can only burn {MistingMetal}.", 255, 150, 100);
+                }
+                SoundEngine.PlaySound(SoundID.MenuTick, Player.position);
+                return;
+            }
+            
+            // If they are a Misting and this is their first time drinking their metal
+            if (IsMisting && !IsMistborn && !HasDiscoveredMistingAbility && metal == MistingMetal)
+            {
+                RevealMistingAbility();
+            }
+            
+            // Calculate reserves
             int currentReserve = MetalReserves.GetValueOrDefault(metal, 0);
             int currentTotalReserves = 0;
             foreach (var pair in MetalReserves)
             {
-            if (pair.Key != MetalType.Chromium)
-            {
-                currentTotalReserves += pair.Value;
-            }
-        }            
+                if (pair.Key != MetalType.Chromium)
+                {
+                    currentTotalReserves += pair.Value;
+                }
+            }            
             // Calculate how much we can actually add based on total cap
             // No longer checking against MAX_METAL_RESERVE for individual metals
             int maxAddToTotal = MAX_TOTAL_RESERVES - currentTotalReserves; // Cap for all metals combined
             int actualAmountToAdd = metal == MetalType.Chromium ? 
-            durationValue : 
-            Math.Min(durationValue, maxAddToTotal);            
+                durationValue : 
+                Math.Min(durationValue, maxAddToTotal);            
             if (actualAmountToAdd <= 0) {
                 // Can't add any more - metal reserves full
                 Main.NewText("Your total metal reserves are full!", 255, 100, 100);
@@ -565,17 +757,17 @@ namespace MistbornMod
         
         // Gets the percentage of total reserves used (0.0 to 1.0)
         public float GetTotalReservesPercentage()
-{
-    int totalWithoutChromium = 0;
-    foreach (var pair in MetalReserves)
-    {
-        if (pair.Key != MetalType.Chromium)
         {
-            totalWithoutChromium += pair.Value;
+            int totalWithoutChromium = 0;
+            foreach (var pair in MetalReserves)
+            {
+                if (pair.Key != MetalType.Chromium)
+                {
+                    totalWithoutChromium += pair.Value;
+                }
+            }
+            return (float)totalWithoutChromium / MAX_TOTAL_RESERVES;
         }
-    }
-    return (float)totalWithoutChromium / MAX_TOTAL_RESERVES;
-}
         
         // Gets the percentage of a specific metal's reserves relative to maximum total reserves
         // This method is updated to show a metal's reserves as a percentage of one vial
@@ -587,24 +779,25 @@ namespace MistbornMod
             // If reserve > METAL_VIAL_AMOUNT, percentage will be > 1.0
             return (float)reserve / METAL_VIAL_AMOUNT;
         }
+        
         public string GetHotkeyDisplayForMetal(MetalType metal)
-{
-    string keybind = "";
-    switch (metal)
-    {
-        case MetalType.Iron: keybind = MistbornMod.IronToggleHotkey?.GetAssignedKeys()[0] ?? "F"; break;
-        case MetalType.Steel: keybind = MistbornMod.SteelToggleHotkey?.GetAssignedKeys()[0] ?? "J"; break;
-        case MetalType.Pewter: keybind = MistbornMod.PewterToggleHotkey?.GetAssignedKeys()[0] ?? "G"; break;
-        case MetalType.Tin: keybind = MistbornMod.TinToggleHotkey?.GetAssignedKeys()[0] ?? "H"; break;
-        case MetalType.Brass: keybind = MistbornMod.BrassToggleHotkey?.GetAssignedKeys()[0] ?? "B"; break;
-        case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys()[0] ?? "Z"; break;
-        case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys()[0] ?? "V"; break;
-        case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys()[0] ?? "K"; break;
-        case MetalType.Copper: keybind = MistbornMod.CopperToggleHotkey?.GetAssignedKeys()[0] ?? "C"; break;
-        case MetalType.Bronze: keybind = MistbornMod.BronzeToggleHotkey?.GetAssignedKeys()[0] ?? "N"; break;
-        default: keybind = ""; break;
-    }
-    return $"[{keybind}]";
-}
+        {
+            string keybind = "";
+            switch (metal)
+            {
+                case MetalType.Iron: keybind = MistbornMod.IronToggleHotkey?.GetAssignedKeys()[0] ?? "F"; break;
+                case MetalType.Steel: keybind = MistbornMod.SteelToggleHotkey?.GetAssignedKeys()[0] ?? "J"; break;
+                case MetalType.Pewter: keybind = MistbornMod.PewterToggleHotkey?.GetAssignedKeys()[0] ?? "G"; break;
+                case MetalType.Tin: keybind = MistbornMod.TinToggleHotkey?.GetAssignedKeys()[0] ?? "H"; break;
+                case MetalType.Brass: keybind = MistbornMod.BrassToggleHotkey?.GetAssignedKeys()[0] ?? "B"; break;
+                case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys()[0] ?? "Z"; break;
+                case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys()[0] ?? "V"; break;
+                case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys()[0] ?? "K"; break;
+                case MetalType.Copper: keybind = MistbornMod.CopperToggleHotkey?.GetAssignedKeys()[0] ?? "C"; break;
+                case MetalType.Bronze: keybind = MistbornMod.BronzeToggleHotkey?.GetAssignedKeys()[0] ?? "N"; break;
+                default: keybind = ""; break;
+            }
+            return $"[{keybind}]";
+        }
     }
 }

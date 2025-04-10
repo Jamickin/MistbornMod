@@ -21,4 +21,4 @@ Find metal vials and create your own at alchemy stations. Discover metallic ores
 
 Survive, fight, and navigate like a true Mistborn!
 
-Version 0.8 - Recipe Changes and drop changes
+Version 0.8 - Misting Update! PLayers are now spawned with a random Misting ability! Recipe Changes and drop changes. Using simple buff-UI to show reserves. 

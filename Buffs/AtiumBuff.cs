@@ -14,7 +14,7 @@ namespace MistbornMod.Buffs
          public override void Load() {
              Metal = MetalType.Atium; 
          }
-        public override void Update(Player player, ref int buffIndex)
+public override void ApplyBuffEffect(Player player, bool isFlaring)
         {
             player.immune = true; 
             player.immuneTime = 3; 
