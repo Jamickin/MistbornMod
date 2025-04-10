@@ -38,10 +38,13 @@ namespace MistbornMod.UI
             // Initialize the list, but we'll filter it in the Draw method
             _metalTypesToDisplay = new List<MetalType>();
         }
-        
+        public bool IsMouseHovering { get; private set; }
+
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+                IsMouseHovering = ContainsPoint(Main.MouseScreen);
+
             
             // Handle UI dragging
             if (_dragging)
@@ -58,6 +61,10 @@ namespace MistbornMod.UI
                     _dragging = false;
                 }
             }
+             if (ContainsPoint(Main.MouseScreen) && Main.mouseLeft)
+    {
+        Main.LocalPlayer.mouseInterface = true;
+    }
         }
 
         public override bool ContainsPoint(Vector2 point)

@@ -92,34 +92,34 @@ namespace MistbornMod
         }
 
         public override void PreUpdatePlayers()
+{
+    // Check if at least one player is Mistborn
+    bool anyMistborn = false;
+    
+    for (int i = 0; i < Main.maxPlayers; i++)
+    {
+        Player player = Main.player[i];
+        if (player.active)
         {
-            // Check if at least one player is Mistborn
-            bool anyMistborn = false;
-            
-            for (int i = 0; i < Main.maxPlayers; i++)
+            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+            if (modPlayer.IsMistborn)
             {
-                Player player = Main.player[i];
-                if (player.active)
-                {
-                    MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-                    if (modPlayer.IsMistborn)
-                    {
-                        anyMistborn = true;
-                        break;
-                    }
-                }
+                anyMistborn = true;
+                break;
             }
-            
-            // Night check - only apply effects at night
-            bool isNight = !Main.dayTime;
-            
-            // Graveyard effect active if player is Mistborn AND it's night
-            if (anyMistborn && isNight)
-            {
-                // Here's the key - we directly modify the game's graveyard visual intensity
-                // This controls the fog, ambiance, and all graveyard effects automatically
-                Main.GraveyardVisualIntensity = 1f;  // Full intensity
-            }
+        }
+    }
+    
+    // Night check - only apply effects at night
+    bool isNight = !Main.dayTime;
+    
+    // Apply graveyard effect if player is Mistborn AND it's night
+    if (anyMistborn && isNight)
+    {
+        // Set the counts extremely high to ensure the effect triggers
+        Main.SceneMetrics.GraveyardTileCount = 100;
+    }
+
             else
             {
                 // Let the normal graveyard system work during daytime
@@ -130,10 +130,35 @@ namespace MistbornMod
                 if (anyMistborn)
                 {
                     Main.GraveyardVisualIntensity = 0f;
+                    Main.SceneMetrics.GraveyardTileCount = 0;
+
                 }
                 // Otherwise let the normal game mechanics handle it
                 // (this allows real graveyards to still work normally)
             }
         }
+        public override void PostUpdateEverything()
+{
+    // Check again to ensure effect remains after other updates
+    bool anyMistborn = false;
+    bool isNight = !Main.dayTime;
+    
+    for (int i = 0; i < Main.maxPlayers; i++)
+    {
+        Player player = Main.player[i];
+        if (player.active && player.GetModPlayer<MistbornPlayer>().IsMistborn)
+        {
+            anyMistborn = true;
+            break;
+        }
+    }
+    
+    if (anyMistborn && isNight)
+    {
+        Main.SceneMetrics.GraveyardTileCount = 100;
+        // Force visual intensity directly
+        Main.GraveyardVisualIntensity = 1f;
+    }
+}
     }
 }

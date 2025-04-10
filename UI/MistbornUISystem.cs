@@ -72,55 +72,54 @@ namespace MistbornMod.UI
         }
 
         public override void UpdateUI(GameTime gameTime)
+{
+    // Only update if the player exists and has a character
+    if (Main.gameMenu || Main.LocalPlayer == null || Main.LocalPlayer.dead) return;
+    
+    // Get the MistbornPlayer instance
+    MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+    
+    // Only update the interface if the UI should be visible
+    if (modPlayer.ShowMetalUI)
+    {
+        // Update the interface
+        _metalReservesInterface?.Update(gameTime);
+        
+        // Only block other UI interactions if mouse is directly over our UI elements
+        // This is the critical part that likely fixes your issue
+        if (MetalReservesUI != null && MetalReservesUI.IsMouseHovering)
         {
-            // Only update if the player exists and has a character
-            if (Main.gameMenu || Main.LocalPlayer == null || Main.LocalPlayer.dead) return;
-            
-            // Get the MistbornPlayer instance
-            MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
-            
-            // Only update the interface if the UI should be visible
-            if (modPlayer.ShowMetalUI)
+            Main.LocalPlayer.mouseInterface = true;
+        }}}
+    
+public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
+{
+    int resourceBarIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Resource Bars"));
+    if (resourceBarIndex != -1)
+    {
+        // Use Insert to add our layer without removing others
+        layers.Insert(resourceBarIndex + 1, new LegacyGameInterfaceLayer(
+            "MistbornMod: Metal Reserves UI",
+            delegate
             {
-                // Check if the UI interface contains the mouse point
-                if (MetalReservesUI.ContainsPoint(Main.MouseScreen))
+                // Only draw if the player exists and has a character
+                if (Main.gameMenu || Main.LocalPlayer == null || Main.LocalPlayer.dead) return true;
+                
+                // Get the MistbornPlayer instance
+                MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
+                
+                // Only draw the interface if the UI should be visible
+                if (modPlayer.ShowMetalUI)
                 {
-                    // Disable player controls when hovering UI
-                    Main.LocalPlayer.mouseInterface = true;
+                    _metalReservesInterface?.Draw(Main.spriteBatch, new GameTime());
                 }
                 
-                _metalReservesInterface?.Update(gameTime);
-            }
-        }
-
-        public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
-        {
-            // Find the index of the vanilla hotbar layer (to place our UI above it)
-            int resourceBarIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Resource Bars"));
-            if (resourceBarIndex != -1)
-            {
-                // Insert our UI at the proper location
-                layers.Insert(resourceBarIndex + 1, new LegacyGameInterfaceLayer(
-                    "MistbornMod: Metal Reserves UI",
-                    delegate
-                    {
-                        // Only draw if the player exists and has a character
-                        if (Main.gameMenu || Main.LocalPlayer == null || Main.LocalPlayer.dead) return true;
-                        
-                        // Get the MistbornPlayer instance
-                        MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
-                        
-                        // Only draw the interface if the UI should be visible
-                        if (modPlayer.ShowMetalUI)
-                        {
-                            _metalReservesInterface?.Draw(Main.spriteBatch, new GameTime());
-                        }
-                        
-                        return true;
-                    },
-                    InterfaceScaleType.UI)
-                );
-            }
-        }
+                // ALWAYS return true to allow other layers to render
+                return true;
+            },
+            InterfaceScaleType.UI)
+        );
+    }
+}
     }
 }
