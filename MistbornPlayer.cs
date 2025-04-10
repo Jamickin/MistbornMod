@@ -80,12 +80,16 @@ namespace MistbornMod
 
         public override void Initialize()
         {
+            UpdateBuffVisibility();
+
             if (Enum.IsDefined(typeof(MetalType), 0))
             {
                 foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
                 {
                     BurningMetals.TryAdd(metal, false); 
-                    MetalReserves.TryAdd(metal, 0);    
+                    MetalReserves.TryAdd(metal, 0);  
+                    int buffId = GetBuffIDForMetal(metal);
+                    if (buffId != -1) Player.AddBuff(buffId, 2);  
                 }
             }
             
@@ -98,6 +102,18 @@ namespace MistbornMod
             FlareEffectTimer = 0;
             FlareIntensity = 0f;
         }
+
+        private void UpdateBuffVisibility()
+{
+    foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
+    {
+        int buffId = GetBuffIDForMetal(metal);
+        if (buffId != -1 && MetalReserves.TryGetValue(metal, out int reserves) && reserves > 0)
+        {
+            Player.AddBuff(buffId, 5);
+        }
+    }
+}
         
         public override void ResetEffects()
         {
@@ -296,6 +312,18 @@ namespace MistbornMod
 
         public override void PostUpdate()
         {
+
+             foreach (MetalType metal in Enum.GetValues(typeof(MetalType)))
+    {
+        int buffId = GetBuffIDForMetal(metal);
+        if (buffId != -1 && MetalReserves.GetValueOrDefault(metal, 0) > 0)
+        {
+            // Add buff with very short duration - will be refreshed each tick if reserves exist
+            Player.AddBuff(buffId, 2);
+        }
+    }
+            UpdateBuffVisibility();
+
             if (!Enum.IsDefined(typeof(MetalType), 0)) return;
 
             // Handle flare visual effects

@@ -1,7 +1,7 @@
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using MistbornMod.Items; // Ensure this using directive points to where your vial items are defined
+using MistbornMod.Items;
 
 namespace MistbornMod.Recipes
 {
@@ -9,91 +9,118 @@ namespace MistbornMod.Recipes
     {
         public override void AddRecipes()
         {
-            int oreAmount = 5; // Standard amount of ore per vial
-            int barAmount = 2; // Standard amount for bars if used
-
+            // Base requirements
+            int oreAmount = 4;
+            int barAmount = 1;
+            
             // --- Iron Vial Recipe ---
             Recipe ironVialRecipe = Recipe.Create(ModContent.ItemType<IronVial>());
-            ironVialRecipe.AddIngredient(ItemID.BottledWater);
-            // Requires Iron Ore OR Lead Ore, depending on world generation
-            ironVialRecipe.AddRecipeGroup(RecipeGroupID.IronBar, barAmount); // Using bars might make more sense than ore for consistency
-            // Alternative using Ore: ironVialRecipe.AddCondition(Condition.PlayerCarriesItem(ItemID.IronOre, oreAmount)); // This condition doesn't work directly, use RecipeGroup or specific ore
-            // Let's use a RecipeGroup for Iron/Lead ore as well if preferred over bars:
-            // ironVialRecipe.AddRecipeGroup("IronOre", oreAmount); // Requires setting up "IronOre" RecipeGroup elsewhere if not default
-            // Simplest: Just require Iron Ore directly, players might need Lead Vial recipe too if world has Lead.
-            // Let's stick to the user's original:
-            // ironVialRecipe.AddIngredient(ItemID.IronOre, oreAmount); // Use this if your world has Iron
-            // ironVialRecipe.AddIngredient(ItemID.LeadOre, oreAmount); // Use this if your world has Lead - Create separate LeadVial? No, Iron/Lead are equivalents.
-             // Best approach: Use the Iron Ore item directly, assuming Iron exists or is the primary.
-             // If Lead is the world equivalent, TModLoader might handle recipe substitution, or you might need a separate LeadVial item/recipe.
-             // For simplicity here, we assume Iron Ore is desired.
-            ironVialRecipe.AddIngredient(ItemID.IronOre, oreAmount);
-            ironVialRecipe.AddTile(TileID.Bottles); // Use Alchemy Table or Bottles as station
+            ironVialRecipe.AddIngredient(ItemID.BottledWater); // Water as base
+            ironVialRecipe.AddIngredient(ItemID.IronBar, barAmount); // Iron metal
+             // Alcohol component for mixture
+            // No tile requirement - craftable by hand
             ironVialRecipe.Register();
 
             // --- Steel Vial Recipe ---
-            // Steel isn't a direct ore. Often represented by Iron + strengthening agent.
-            Recipe steelVialRecipe = Recipe.Create(ModContent.ItemType<SteelVial>()); // Assumes SteelVial class exists
+            Recipe steelVialRecipe = Recipe.Create(ModContent.ItemType<SteelVial>());
             steelVialRecipe.AddIngredient(ItemID.BottledWater);
-            steelVialRecipe.AddIngredient(ItemID.IronBar, barAmount); // Use Iron Bar as base
-            // steelVialRecipe.AddIngredient(ItemID.Coal); // If you have Coal modded in
-            // Or just require more iron/different station? Let's use Iron Bar.
-            steelVialRecipe.AddTile(TileID.Anvils); // Steel implies stronger forging - Use Anvil? Or keep Bottles? Let's use Anvil.
+            steelVialRecipe.AddIngredient(ItemID.IronBar, barAmount); // Iron base
+            steelVialRecipe.AddIngredient(ItemID.Coal, 2); // Carbon to convert to steel
+             // Alcohol component
+            // No tile requirement
             steelVialRecipe.Register();
 
             // --- Pewter Vial Recipe ---
-            // Pewter is an alloy, typically Tin + Lead (or Copper/Antimony).
-            Recipe pewterVialRecipe = Recipe.Create(ModContent.ItemType<PewterVial>()); // Assumes PewterVial class exists
+            Recipe pewterVialRecipe = Recipe.Create(ModContent.ItemType<PewterVial>());
             pewterVialRecipe.AddIngredient(ItemID.BottledWater);
-            pewterVialRecipe.AddIngredient(ItemID.TinOre, oreAmount / 2 + 1); // Requires Tin
-            pewterVialRecipe.AddIngredient(ItemID.LeadOre, oreAmount / 2 + 1); // Requires Lead
-            pewterVialRecipe.AddTile(TileID.Bottles);
+            pewterVialRecipe.AddIngredient(ItemID.TinBar, 1); // Tin component
+            pewterVialRecipe.AddIngredient(ItemID.LeadBar, 1); // Lead component
+             // Alcohol base
+            // No tile requirement
             pewterVialRecipe.Register();
-            // Note: This recipe requires the world to have *both* Tin and Lead available, which isn't default.
-            // Alternative: Use Tin Bar + Lead Bar at Anvil? Or Tin + Shadow Scale/Tissue Sample?
-            // Let's stick to ores for now. Player might need to acquire both via other means if world only has one.
 
             // --- Tin Vial Recipe ---
-            Recipe tinVialRecipe = Recipe.Create(ModContent.ItemType<TinVial>()); // Assumes TinVial class exists
+            Recipe tinVialRecipe = Recipe.Create(ModContent.ItemType<TinVial>());
             tinVialRecipe.AddIngredient(ItemID.BottledWater);
-            tinVialRecipe.AddIngredient(ItemID.TinOre, oreAmount); // Requires Tin Ore OR Zinc Ore
-            // Use RecipeGroup if Zinc is the alternative
-            // tinVialRecipe.AddRecipeGroup("TinOre", oreAmount); // Requires setting up "TinOre" RecipeGroup elsewhere
-            // Simplest: Assume Tin Ore is desired.
-            tinVialRecipe.AddIngredient(ItemID.TinOre, oreAmount);
-            tinVialRecipe.AddTile(TileID.Bottles);
+            tinVialRecipe.AddIngredient(ItemID.TinBar, barAmount);
+             // Alcohol component
+            // No tile requirement
             tinVialRecipe.Register();
 
-             // --- Brass Vial Recipe (Updated) ---
-            Recipe brassVialRecipe = Recipe.Create(ModContent.ItemType<BrassVial>()); 
+            // --- Brass Vial Recipe ---
+            Recipe brassVialRecipe = Recipe.Create(ModContent.ItemType<BrassVial>());
             brassVialRecipe.AddIngredient(ItemID.BottledWater);
-            brassVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount / 2 + 1); 
-            // Use ModContent.ItemType for your modded Zinc Ore
-            brassVialRecipe.AddIngredient(ModContent.ItemType<ZincOre>(), oreAmount / 2 + 1); 
-            brassVialRecipe.AddTile(TileID.Bottles);
+            brassVialRecipe.AddIngredient(ItemID.CopperBar, 1); // Copper component
+            brassVialRecipe.AddIngredient(ModContent.ItemType<ZincOre>(), 2); // Zinc component
+             // Alcohol base
+            // No tile requirement
             brassVialRecipe.Register();
-            // Note: Still requires Copper Ore naturally.
 
-            // --- Zinc Vial Recipe (Updated) ---
-            Recipe zincVialRecipe = Recipe.Create(ModContent.ItemType<ZincVial>()); 
+            // --- Zinc Vial Recipe ---
+            Recipe zincVialRecipe = Recipe.Create(ModContent.ItemType<ZincVial>());
             zincVialRecipe.AddIngredient(ItemID.BottledWater);
             zincVialRecipe.AddIngredient(ModContent.ItemType<ZincOre>(), oreAmount);
-            zincVialRecipe.AddTile(TileID.Bottles);
+             // Alcohol component
+            // No tile requirement
             zincVialRecipe.Register();
             
+            // --- Copper Vial Recipe ---
             Recipe copperVialRecipe = Recipe.Create(ModContent.ItemType<CopperVial>());
             copperVialRecipe.AddIngredient(ItemID.BottledWater);
-            copperVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount);
-            copperVialRecipe.AddTile(TileID.Bottles);
+            copperVialRecipe.AddIngredient(ItemID.CopperBar, barAmount);
+             // Alcohol component
+            // No tile requirement
             copperVialRecipe.Register();
 
+            // --- Bronze Vial Recipe ---
             Recipe bronzeVialRecipe = Recipe.Create(ModContent.ItemType<BronzeVial>());
             bronzeVialRecipe.AddIngredient(ItemID.BottledWater);
-            bronzeVialRecipe.AddIngredient(ItemID.CopperOre, oreAmount / 2 + 1);
-            bronzeVialRecipe.AddIngredient(ItemID.TinOre, oreAmount / 2 + 1);
-            bronzeVialRecipe.AddTile(TileID.Bottles);
+            bronzeVialRecipe.AddIngredient(ItemID.CopperBar, 1); // Copper component
+            bronzeVialRecipe.AddIngredient(ItemID.TinBar, 1); // Tin component
+             // Alcohol component
+            // No tile requirement
             bronzeVialRecipe.Register();
-            }
+            
+            // --- Atium Vial Recipe 1 (by hand from Atium Bead) ---
+            Recipe atiumVialSimpleRecipe = Recipe.Create(ModContent.ItemType<AtiumVial>());
+            atiumVialSimpleRecipe.AddIngredient(ItemID.BottledWater);
+             // Alcohol base
+            atiumVialSimpleRecipe.AddIngredient(ModContent.ItemType<AtiumBead>(), 1); // Use Lerasium bead as source
+            // No tile requirement
+            atiumVialSimpleRecipe.Register();
+            
+            // --- Atium Vial Recipe 2 (alternative complex recipe) ---
+            Recipe atiumVialComplexRecipe = Recipe.Create(ModContent.ItemType<AtiumVial>());
+            atiumVialComplexRecipe.AddIngredient(ItemID.BottledWater);
+            atiumVialComplexRecipe.AddIngredient(ItemID.FallenStar, 3); // Celestial component
+            atiumVialComplexRecipe.AddIngredient(ItemID.SoulofLight, 1); // Essence component
+             // Alcohol base
+            atiumVialComplexRecipe.AddTile(TileID.DemonAltar); // Special altar still required for direct creation
+            atiumVialComplexRecipe.Register();
+
+             Recipe lerasiumBeadRecipe = Recipe.Create(ModContent.ItemType<LerasiumBead>());
+            // High-tier ingredients to make it challenging to craft
+            lerasiumBeadRecipe.AddIngredient(ItemID.LifeCrystal, 1); // Life Crystal
+            lerasiumBeadRecipe.AddIngredient(ItemID.FallenStar, 5);  // Fallen Stars
+            lerasiumBeadRecipe.AddIngredient(ItemID.GoldBar, 5);     // Gold Bars
+            lerasiumBeadRecipe.AddIngredient(ItemID.SoulofLight, 5); // Souls of Light 
+            lerasiumBeadRecipe.AddIngredient(ItemID.SoulofNight, 5); // Souls of Night
+            // Require a special crafting station
+            lerasiumBeadRecipe.AddTile(TileID.DemonAltar); // At a Demon Altar
+            
+            // Register the recipe
+            lerasiumBeadRecipe.Register();
+
+            Recipe AtiumBeadRecipe = Recipe.Create(ModContent.ItemType<AtiumBead>());
+            // High-tier ingredients to make it challenging to craft
+            AtiumBeadRecipe.AddIngredient(ItemID.FallenStar, 5);  // Fallen Stars
+            AtiumBeadRecipe.AddIngredient(ItemID.SoulofLight, 1); // Souls of Light 
+            AtiumBeadRecipe.AddIngredient(ItemID.SoulofNight, 1); // Souls of Night
+            // Require a special crafting station
+            AtiumBeadRecipe.AddTile(TileID.DemonAltar); // At a Demon Altar
+            
+            // Register the recipe
+            AtiumBeadRecipe.Register();
         }
     }
-
+}

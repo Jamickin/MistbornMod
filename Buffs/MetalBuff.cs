@@ -51,7 +51,22 @@ namespace MistbornMod.Buffs
             {
                  tip += "\nReserves: N/A";
             }
+
+            // Set buff opacity based on active status
+bool isActive = false;
+if (this.Metal == MetalType.Iron)
+    isActive = modPlayer.IsActivelyIronPulling;
+else if (this.Metal == MetalType.Steel)
+    isActive = modPlayer.IsActivelySteelPushing;
+else if (this.Metal == MetalType.Chromium)
+    isActive = modPlayer.IsActivelyChromiumStripping;
+else
+    isActive = modPlayer.BurningMetals.TryGetValue(this.Metal, out bool burning) && burning;
+
+Main.buffAlpha[Type] = isActive ? 1f : 0.4f;
+
         }
+        
         
         // Virtual method that can be overridden by specific metal buffs
         // Called when a buff is removed

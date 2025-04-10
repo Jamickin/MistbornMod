@@ -19,8 +19,8 @@ namespace MistbornMod.Items
 
         public override void SetDefaults()
         {
-            Item.width = 16;
-            Item.height = 16;
+            Item.width = 32;
+            Item.height = 32;
             Item.maxStack = 1; // Cannot stack
             Item.value = Item.sellPrice(gold: 5); // Very valuable
             Item.rare = ItemRarityID.Purple; // Extremely rare
@@ -101,23 +101,6 @@ namespace MistbornMod.Items
             }
         }
         
-        public override void AddRecipes()
-        {
-            // The Lerasium Bead requires special items to craft (but is also found as a rare drop)
-            Recipe recipe = CreateRecipe();
-            
-            // High-tier ingredients to make it challenging to craft
-            recipe.AddIngredient(ItemID.LifeCrystal, 1); // Life Crystal
-            recipe.AddIngredient(ItemID.FallenStar, 5);  // Fallen Stars
-            recipe.AddIngredient(ItemID.GoldBar, 5);     // Gold Bars
-            recipe.AddIngredient(ItemID.SoulofLight, 5); // Souls of Light 
-            recipe.AddIngredient(ItemID.SoulofNight, 5); // Souls of Night
-            
-            // Require a special crafting station
-            recipe.AddTile(TileID.DemonAltar); // At a Demon Altar
-            
-            // Register the recipe
-            recipe.Register();
-        }
+      
     }
 }

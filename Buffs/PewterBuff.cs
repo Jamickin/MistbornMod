@@ -28,7 +28,9 @@ namespace MistbornMod.Buffs
             player.statDefense += (int)(8 * multiplier);          
             player.lifeRegen += (int)(4 * multiplier);
             player.endurance += 0.40f * (multiplier * 0.75f); // Scale endurance less aggressively
-            
+            player.toolTime = (int)(player.toolTime * (1 - 0.75f * multiplier));
+    
+          
             // Add visual effects when flaring
             if (modPlayer.IsFlaring && Main.rand.NextBool(6))
             {

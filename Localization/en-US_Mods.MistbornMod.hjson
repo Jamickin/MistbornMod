@@ -110,6 +110,11 @@ Items: {
 		DisplayName: Lerasium Bead
 		Tooltip: ""
 	}
+
+	AtiumBead: {
+		DisplayName: Atium Bead
+		Tooltip: ""
+	}
 }
 
 Keybinds: {

@@ -21,4 +21,4 @@ Find metal vials and create your own at alchemy stations. Discover metallic ores
 
 Survive, fight, and navigate like a true Mistborn!
 
-Version 0.6 - UI changes and proper implementations of metals. Ascension via Lerasium now available! Recipes and new Ore coming!
+Version 0.8 - Recipe Changes and drop changes

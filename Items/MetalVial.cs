@@ -12,8 +12,8 @@ namespace MistbornMod.Items
 
         public override void SetDefaults()
         {
-            Item.width = 20;
-            Item.height = 26;
+            Item.width = 32;
+            Item.height = 32;
             Item.useStyle = ItemUseStyleID.DrinkLiquid;
             Item.useAnimation = 17;
             Item.useTime = 17;
