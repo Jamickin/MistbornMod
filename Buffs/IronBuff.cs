@@ -1,9 +1,7 @@
 using Terraria;
 using Terraria.ID;
-using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
-using MistbornMod.Items;
-
+using MistbornMod.Utils;
 
 namespace MistbornMod.Buffs
 {
@@ -24,7 +22,7 @@ namespace MistbornMod.Buffs
             Metal = MetalType.Iron; 
         }
 
-public override void ApplyBuffEffect(Player player, bool isFlaring)
+        public override void Update(Player player, ref int buffIndex)
         {
             // Get the MistbornPlayer instance to check flaring status
             MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
@@ -53,7 +51,7 @@ public override void ApplyBuffEffect(Player player, bool isFlaring)
                 if (!item.active || item.noGrabDelay > 0) continue;
 
                 float distanceToItem = Vector2.Distance(player.Center, item.Center);
-                bool isMetallic = IsMetallicItem(item.type); 
+                bool isMetallic = MetalDetectionUtils.IsMetallicItem(item.type); 
 
                 if (distanceToItem < ScanRange && isMetallic)
                 {
@@ -105,7 +103,8 @@ public override void ApplyBuffEffect(Player player, bool isFlaring)
                     if (tile != null && tile.HasTile)
                     {
                         // Check if this tile is a valid metallic ore or object
-                        bool isMetallic = IsMetallicOre(tile.TileType) || IsMetallicObject(tile.TileType);
+                        bool isMetallic = MetalDetectionUtils.IsMetallicOre(tile.TileType) || 
+                                          MetalDetectionUtils.IsMetallicObject(tile.TileType);
                         
                         if (isMetallic)
                         {
@@ -138,7 +137,7 @@ public override void ApplyBuffEffect(Player player, bool isFlaring)
             if (closestTargetEntity != null) 
             {
                 // Thicker line when flaring
-                DrawLineWithDust(player.Center, closestTargetEntity.Center, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
+                MetalDetectionUtils.DrawLineWithDust(player.Center, closestTargetEntity.Center, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f, modPlayer.IsFlaring);
                 
                 // Check if this is a "held" mechanic activation
                 if (modPlayer.IsActivelyIronPulling && playerPullCooldown <= 0)
@@ -162,7 +161,7 @@ public override void ApplyBuffEffect(Player player, bool isFlaring)
             else if (closestTilePos.HasValue)
             {
                 // Thicker line when flaring
-                DrawLineWithDust(player.Center, closestTilePos.Value, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f);
+                MetalDetectionUtils.DrawLineWithDust(player.Center, closestTilePos.Value, LineDustType, modPlayer.IsFlaring ? 0.22f : 0.15f, modPlayer.IsFlaring);
                 
                 // Check if actively pulling and apply force to player
                 if (modPlayer.IsActivelyIronPulling && playerPullCooldown <= 0)
@@ -191,144 +190,6 @@ public override void ApplyBuffEffect(Player player, bool isFlaring)
                 Vector2 dustVel = Main.rand.NextVector2CircularEdge(modPlayer.IsFlaring ? 1.5f : 1f, modPlayer.IsFlaring ? 1.5f : 1f);
                 Dust.NewDustPerfect(player.Center, LineDustType, dustVel, 150, default, modPlayer.IsFlaring ? 1.0f : 0.8f);
             }
-        } 
-
-        private bool IsMetallicItem(int itemType)
-        {
-            if (itemType <= ItemID.None || itemType >= ItemLoader.ItemCount) {
-                 return false;
-            }
-
-             Item sampleItem = ContentSamples.ItemsByType[itemType];
-            bool placesMetallicTile = sampleItem.createTile >= TileID.Dirt &&
-                                      (TileID.Sets.Ore[sampleItem.createTile] || 
-                                       sampleItem.createTile == TileID.MetalBars || 
-                                       sampleItem.createTile == TileID.IronBrick || 
-                                       sampleItem.createTile == TileID.LeadBrick ||
-                                       sampleItem.createTile == TileID.SilverBrick ||
-                                       sampleItem.createTile == TileID.TungstenBrick ||
-                                       sampleItem.createTile == TileID.GoldBrick ||
-                                       sampleItem.createTile == TileID.PlatinumBrick ||
-                                       sampleItem.createTile == TileID.Anvils);
-            if (placesMetallicTile) return true;
-            bool isKnownMetallic = itemType == ItemID.IronBar ||
-                                   itemType == ItemID.LeadBar ||
-                                   itemType == ItemID.SilverBar ||
-                                   itemType == ItemID.TungstenBar ||
-                                   itemType == ItemID.GoldBar ||
-                                   itemType == ItemID.PlatinumBar ||
-                                   itemType == ItemID.CopperCoin ||
-                                   itemType == ItemID.SilverCoin ||
-                                   itemType == ItemID.GoldCoin ||
-                                   itemType == ItemID.PlatinumCoin ||
-                                   itemType == ItemID.Chain ||
-                                   itemType == ItemID.Hook || 
-                                   itemType == ItemID.Wire ||
-                                   itemType == ItemID.Minecart || 
-                                   itemType == ItemID.EmptyBucket ||
-                                   itemType == ItemID.MetalSink; 
-            if (isKnownMetallic) return true;
-            bool isMetallicTool = (sampleItem.pick > 0) ||   
-                                  (sampleItem.axe > 0) ||      
-                                  (sampleItem.hammer > 0) || 
-                                  sampleItem.createTile == TileID.Anvils || sampleItem.createTile == TileID.MythrilAnvil;
-            if (isMetallicTool) return true;
-            bool isArmorPiece = sampleItem.defense > 0 && !sampleItem.accessory;
-            bool isWeapon = (sampleItem.DamageType == DamageClass.Melee || sampleItem.DamageType == DamageClass.Ranged) && sampleItem.damage > 0;
-            bool usesAmmo = sampleItem.useAmmo > 0;
-            if (isArmorPiece || isWeapon || usesAmmo) return true;           
-            return false;
         }
-
-        private bool IsMetallicOre(int tileType)
-        {
-            return TileID.Sets.Ore[tileType] ||
-                   tileType == TileID.Iron ||
-                   tileType == TileID.Lead ||
-                   tileType == TileID.Silver ||
-                   tileType == TileID.Tungsten ||
-                   tileType == TileID.Gold ||
-                   tileType == TileID.Platinum ||
-                   tileType == ModContent.TileType<Tiles.ZincOreTile>();
-        }
-        
-       private bool IsMetallicObject(int tileType)
-{
-    // Check for various metal objects
-    return tileType == TileID.MetalBars ||           // Metal bars
-           tileType == TileID.Anvils ||              // Anvils (regular)
-           tileType == TileID.MythrilAnvil ||        // Mythril anvil
-           tileType == TileID.AdamantiteForge ||     // Adamantite forge
-           tileType == TileID.Furnaces ||            // Furnaces
-           tileType == TileID.Hellforge ||           // Hellforge
-           tileType == TileID.Chain ||               // Chains
-           tileType == TileID.Bathtubs ||            // Bathtubs
-           tileType == TileID.Chandeliers ||         // Chandeliers
-           tileType == TileID.Cannon ||              // Cannons
-           tileType == TileID.LandMine ||            // Land mines
-           tileType == TileID.Traps ||               // Traps
-           tileType == TileID.Boulder ||             // Boulders
-           tileType == TileID.IronBrick ||           // Iron bricks
-           tileType == TileID.LeadBrick ||           // Lead bricks
-           tileType == TileID.CopperBrick ||         // Copper bricks
-           tileType == TileID.TinBrick ||            // Tin bricks
-           tileType == TileID.SilverBrick ||         // Silver bricks
-           tileType == TileID.TungstenBrick ||       // Tungsten bricks
-           tileType == TileID.GoldBrick ||           // Gold bricks
-           tileType == TileID.PlatinumBrick ||       // Platinum bricks
-           tileType == TileID.AlchemyTable ||        // Alchemy table
-           // Corrected chest references:
-           tileType == TileID.Containers ||          // Container group 1 (various chests)
-           tileType == TileID.Containers2 ||         // Container group 2 (more chests)
-           tileType == TileID.FakeContainers ||      // Fake container group 1
-           tileType == TileID.FakeContainers2 ||     // Fake container group 2
-          
-           // Other metal objects:
-           tileType == TileID.MetalBars ||           // Metal bars again (for emphasis)
-           tileType == TileID.GoldBirdCage ||        // Gold bird cage
-           tileType == TileID.Campfire ||            // Campfire (iron grate underneath)
-           // Fixed missing IDs (using correct TileID references):
-           tileType == TileID.Kegs ||                // Kegs (metal bands)
-           tileType == TileID.GrandfatherClocks ||   // Grandfather clocks (gears)
-           tileType == TileID.Lamps ||               // Lamps (metal components)
-           tileType == TileID.WaterFountain ||       // Water fountain
-           tileType == TileID.TrashCan ||            // Trash can
-           tileType == TileID.Sawmill ||             // Sawmill (metal parts)
-           tileType == TileID.Lever ||               // Lever
-           tileType == TileID.Switches ||            // Switches
-           tileType == TileID.PressurePlates ||      // Pressure plates
-           tileType == TileID.ClosedDoor ||          // Doors (metal components)
-           tileType == TileID.OpenDoor ||            // Open doors (metal components)
-           tileType == TileID.DisplayDoll ||         // Display doll (metal stand)
-           tileType == TileID.WeaponsRack ||         // Weapons rack
-           tileType == TileID.TargetDummy ||         // Training dummy (correct ID)
-           tileType == TileID.MinecartTrack;         // Minecart track
-}
-        private void DrawLineWithDust(Vector2 start, Vector2 end, int dustType, float density = 0.1f)
-        {
-            if (Vector2.DistanceSquared(start, end) < 16f * 16f) return;
-            Vector2 direction = end - start;
-            float distance = direction.Length();
-            if (distance == 0f) return;
-            direction.Normalize();
-            int steps = (int)(distance * density);
-            if (steps <= 0) return;
-
-            // Get the player's flaring status for dust intensity
-            MistbornPlayer modPlayer = Main.LocalPlayer.GetModPlayer<MistbornPlayer>();
-            bool isFlaring = modPlayer?.IsFlaring ?? false;
-
-            for (int i = 1; i <= steps; i++)
-            {
-                float progress = (float)i / steps;
-                Vector2 dustPos = start + direction * distance * progress;
-                if(Main.rand.NextBool(isFlaring ? 2 : 3)) {
-                     Dust dust = Dust.NewDustPerfect(dustPos, dustType, Vector2.Zero, 150, default, isFlaring ? 0.5f : 0.4f);
-                     dust.noGravity = true;
-                     dust.velocity *= 0.1f;
-                     dust.fadeIn = isFlaring ? 0.8f : 0.6f;
-                }
-            }
-        }
-    } 
+    }
 }
