@@ -7,14 +7,13 @@ namespace MistbornMod.Buffs
         public override void SetStaticDefaults()
         {
             base.SetStaticDefaults();
+            Metal = MetalType.Atium;
             Main.buffNoTimeDisplay[Type] = true; // Hide default timer
             Main.pvpBuff[Type] = true; 
             Main.debuff[Type] = false; 
         }
-         public override void Load() {
-             Metal = MetalType.Atium; 
-         }
-public override void ApplyBuffEffect(Player player, bool isFlaring)
+
+        public override void ApplyBuffEffect(Player player, bool isFlaring)
         {
             player.immune = true; 
             player.immuneTime = 3; 

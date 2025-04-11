@@ -30,22 +30,7 @@ namespace MistbornMod.Buffs
             Metal = MetalType.Steel;
         }
         
-        public override void Update(Player player, ref int buffIndex)
-        {
-            // Get the MistbornPlayer instance to check flaring status
-            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-            float multiplier = modPlayer.IsFlaring ? 2.0f : 1.0f;
-            
-            // Calculate dynamic values based on flaring status
-            float currentPushForce = PushForce * multiplier;
-            float currentPlayerPushForce = PlayerPushForce * multiplier;
-            float currentMaxSpeedSq = MaxPlayerPushSpeedSq * multiplier;
-            
-            if (playerPushCooldown > 0) {
-                playerPushCooldown--;
-            }
-        } 
-        
+        // Handle collisions between items and NPCs for damage
         private void HandleItemCollisionsWithNPCs(Item item, Player player, bool isFlaring)
         {
             // Skip if the item is on cooldown
@@ -123,6 +108,21 @@ namespace MistbornMod.Buffs
                 }
             }
         }
+        
+        public override void Update(Player player, ref int buffIndex)
+        {
+            // Get the MistbornPlayer instance to check flaring status
+            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+            float multiplier = modPlayer.IsFlaring ? 2.0f : 1.0f;
+            
+            // Calculate dynamic values based on flaring status
+            float currentPushForce = PushForce * multiplier;
+            float currentPlayerPushForce = PlayerPushForce * multiplier;
+            float currentMaxSpeedSq = MaxPlayerPushSpeedSq * multiplier;
+            
+            if (playerPushCooldown > 0) {
+                playerPushCooldown--;
+            }
             
             // Update item damage cooldowns
             List<int> keysToRemove = new List<int>();
@@ -138,7 +138,82 @@ namespace MistbornMod.Buffs
                     itemDamageCooldowns[kvp.Key] = cooldown;
                 }
             }
+            
+            foreach (int key in keysToRemove)
+            {
+                itemDamageCooldowns.Remove(key);
+            }
+            
+            // Find closest metal to mouse cursor
+            Vector2 mouseWorld = Main.MouseWorld;
+            float closestDistSq = PushRange * PushRange;
+            Entity closestTargetEntity = null;
+            Vector2? closestTilePos = null;
+            
+            // Check for items
+            for (int i = 0; i < Main.maxItems; i++)
+            {
+                Item item = Main.item[i];
+                if (item.active && MetalDetectionUtils.IsMetallicItem(item.type))
+                {
+                    float distSq = Vector2.DistanceSquared(mouseWorld, item.Center);
+                    if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, item.Center) < PushRange * PushRange)
+                    {
+                        closestDistSq = distSq;
+                        closestTargetEntity = item;
+                        closestTilePos = null;
+                    }
+                }
+            }
+            
+            // Check for NPCs
+            for (int i = 0; i < Main.maxNPCs; i++)
+            {
+                NPC npc = Main.npc[i];
+                if (npc.active && !npc.friendly && npc.knockBackResist < 1f && MetalDetectionUtils.IsMetallicNPC(npc))
+                {
+                    float distSq = Vector2.DistanceSquared(mouseWorld, npc.Center);
+                    if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, npc.Center) < PushRange * PushRange)
+                    {
+                        closestDistSq = distSq;
+                        closestTargetEntity = npc;
+                        closestTilePos = null;
+                    }
+                }
+            }
 
+            // Check for metallic tiles
+            int playerTileX = (int)(player.Center.X / 16f);
+            int playerTileY = (int)(player.Center.Y / 16f);
+            int tileScanRadius = (int)(PushRange / 16f) + 2;
+
+            for (int x = playerTileX - tileScanRadius; x <= playerTileX + tileScanRadius; x++)
+            {
+                for (int y = playerTileY - tileScanRadius; y <= playerTileY + tileScanRadius; y++)
+                {
+                    if (!WorldGen.InWorld(x, y, 1)) continue;
+                    Tile tile = Main.tile[x, y];
+                    if (tile != null && tile.HasTile)
+                    {
+                        // Check for both ores and metallic objects like anvils, metal bars, etc.
+                        bool isMetallic = MetalDetectionUtils.IsMetallicOre(tile.TileType) || 
+                                          MetalDetectionUtils.IsMetallicObject(tile.TileType);
+                        
+                        if (isMetallic)
+                        {
+                            Vector2 tileWorldCenter = new Vector2(x * 16f + 8f, y * 16f + 8f);
+                            float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldCenter);
+                            if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, tileWorldCenter) < PushRange * PushRange)
+                            {
+                                closestDistSq = distSq;
+                                closestTargetEntity = null;
+                                closestTilePos = tileWorldCenter;
+                            }
+                        }
+                    }
+                }
+            }
+            
             // Draw lines and apply forces to the closest target
             bool isActivelySteelPushing = modPlayer.IsActivelySteelPushing;
             
@@ -220,77 +295,6 @@ namespace MistbornMod.Buffs
                 Vector2 dustVel = Main.rand.NextVector2CircularEdge(1f, 1f);
                 Dust.NewDustPerfect(player.Center, PushDustType, dustVel, 150, default, 0.8f);
             }
-            
-            foreach (int key in keysToRemove)
-            {
-                itemDamageCooldowns.Remove(key);
-            }
-            
-            Vector2 mouseWorld = Main.MouseWorld;
-            float closestDistSq = PushRange * PushRange;
-            Entity closestTargetEntity = null;
-            Vector2? closestTilePos = null;
-            
-            // Check for items
-            for (int i = 0; i < Main.maxItems; i++)
-            {
-                Item item = Main.item[i];
-                if (item.active && MetalDetectionUtils.IsMetallicItem(item.type))
-                {
-                    float distSq = Vector2.DistanceSquared(mouseWorld, item.Center);
-                    if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, item.Center) < PushRange * PushRange)
-                    {
-                        closestDistSq = distSq;
-                        closestTargetEntity = item;
-                        closestTilePos = null;
-                    }
-                }
-            }
-            
-            // Check for NPCs
-            for (int i = 0; i < Main.maxNPCs; i++)
-            {
-                NPC npc = Main.npc[i];
-                if (npc.active && !npc.friendly && npc.knockBackResist < 1f && MetalDetectionUtils.IsMetallicNPC(npc))
-                {
-                    float distSq = Vector2.DistanceSquared(mouseWorld, npc.Center);
-                    if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, npc.Center) < PushRange * PushRange)
-                    {
-                        closestDistSq = distSq;
-                        closestTargetEntity = npc;
-                        closestTilePos = null;
-                    }
-                }
-            }
-
-            // Check for metallic tiles
-            int playerTileX = (int)(player.Center.X / 16f);
-            int playerTileY = (int)(player.Center.Y / 16f);
-            int tileScanRadius = (int)(PushRange / 16f) + 2;
-
-            for (int x = playerTileX - tileScanRadius; x <= playerTileX + tileScanRadius; x++)
-            {
-                for (int y = playerTileY - tileScanRadius; y <= playerTileY + tileScanRadius; y++)
-                {
-                    if (!WorldGen.InWorld(x, y, 1)) continue;
-                    Tile tile = Main.tile[x, y];
-                    if (tile != null && tile.HasTile)
-                    {
-                        // Check for both ores and metallic objects like anvils, metal bars, etc.
-                        bool isMetallic = MetalDetectionUtils.IsMetallicOre(tile.TileType) || 
-                                          MetalDetectionUtils.IsMetallicObject(tile.TileType);
-                        
-                        if (isMetallic)
-                        {
-                            Vector2 tileWorldCenter = new Vector2(x * 16f + 8f, y * 16f + 8f);
-                            float distSq = Vector2.DistanceSquared(mouseWorld, tileWorldCenter);
-                            if (distSq < closestDistSq && Vector2.DistanceSquared(player.Center, tileWorldCenter) < PushRange * PushRange)
-                            {
-                                closestDistSq = distSq;
-                                closestTargetEntity = null;
-                                closestTilePos = tileWorldCenter;
-                            }
-                        }
-                    }
-                }
-            }
+        }
+    }
+}
