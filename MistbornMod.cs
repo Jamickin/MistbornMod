@@ -35,7 +35,8 @@ namespace MistbornMod
             BronzeToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Bronze", "N");
             // Add the flare toggle keybind
             FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
-            
+                UI.DraggableMetalUI.ToggleUIHotkey = KeybindLoader.RegisterKeybind(this, "Toggle Metal UI", "M");
+
             // Add the new metal detection hotkey (using LeftShift as default)
             MetalDetectionHotkey = KeybindLoader.RegisterKeybind(this, "Detect Metals", "X");
         }

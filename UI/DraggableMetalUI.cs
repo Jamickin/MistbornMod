@@ -27,6 +27,14 @@ namespace MistbornMod.UI
         
         // UI configuration
         private Vector2 position = new Vector2(30, 80); 
+        public void EnsureVisibilityForNewMisting()
+{
+    // Force visibility when a player becomes a new Misting
+    isVisible = true;
+    
+    // Debug: Uncomment to verify this is called
+    // Main.NewText("Metal UI visibility enabled for new Misting");
+}
         private const int LINE_HEIGHT = 20; 
         private float scale = 1.0f;
         private bool isVisible = true;
@@ -44,12 +52,10 @@ namespace MistbornMod.UI
         // Bar style enum
         public enum BarStyle
         {
-            Blocks,
-            Pips,
             Gradient
         }
         
-        private BarStyle currentBarStyle = BarStyle.Blocks;
+        private BarStyle currentBarStyle = BarStyle.Gradient;
         
         // Colors for each metal type - instantiated once to avoid recreating during draw
         private static readonly Dictionary<MetalType, Color> metalColors = new Dictionary<MetalType, Color>()
@@ -99,41 +105,54 @@ namespace MistbornMod.UI
         }
         
         public override void OnModLoad()
-        {
-            // Load config
-            if (ModContent.GetInstance<MetalUIConfig>() is MetalUIConfig loadedConfig)
-            {
-                config = loadedConfig;
-                ApplyConfig();
-            }
-        }
+{
+    // Load config
+    if (ModContent.GetInstance<MetalUIConfig>() is MetalUIConfig loadedConfig)
+    {
+        config = loadedConfig;
+        ApplyConfig();
+        
+        // Debug: Uncomment to verify config loading
+        // Main.NewText($"Metal UI Config loaded: ShowByDefault={config.ShowByDefault}, Scale={config.UIScale}");
+    }
+    else
+    {
+        // Create default config if none exists
+        config = new MetalUIConfig();
+        ApplyConfig();
+        
+        // Debug: Uncomment if config fails to load
+        // Main.NewText("Failed to load Metal UI config, using defaults");
+    }
+}
         
         internal void ApplyConfig()
+{
+    if (config == null) return;
+    
+    position = config.DefaultPosition;
+    scale = config.UIScale;
+    dragEnabled = config.AllowDragging;
+    currentBarStyle = BarStyle.Gradient; // Always use Gradient
+    isVisible = config.ShowByDefault;
+    
+    // Apply saved positions and unlink status
+    foreach (var item in config.UnlinkedMetals ?? new Dictionary<string, bool>())
+    {
+        if (Enum.TryParse<MetalType>(item.Key, out var metal))
         {
-            if (config == null) return;
-            
-            position = config.DefaultPosition;
-            scale = config.UIScale;
-            dragEnabled = config.AllowDragging;
-            currentBarStyle = config.BarStyle;
-            
-            // Apply saved positions and unlink status
-            foreach (var item in config.UnlinkedMetals ?? new Dictionary<string, bool>())
-            {
-                if (Enum.TryParse<MetalType>(item.Key, out var metal))
-                {
-                    unlinkedBars[metal] = item.Value;
-                }
-            }
-            
-            foreach (var item in config.MetalPositions ?? new Dictionary<string, Vector2>())
-            {
-                if (Enum.TryParse<MetalType>(item.Key, out var metal))
-                {
-                    barPositions[metal] = item.Value;
-                }
-            }
+            unlinkedBars[metal] = item.Value;
         }
+    }
+    
+    foreach (var item in config.MetalPositions ?? new Dictionary<string, Vector2>())
+    {
+        if (Enum.TryParse<MetalType>(item.Key, out var metal))
+        {
+            barPositions[metal] = item.Value;
+        }
+    }
+}
         
         public override void OnWorldUnload()
         {
@@ -147,6 +166,13 @@ namespace MistbornMod.UI
                 config.MetalPositions = barPositions.ToDictionary(x => x.Key.ToString(), x => x.Value);
             }
         }
+        public void ForceToggleVisibility()
+{
+    isVisible = !isVisible;
+    
+    // Debug message that's useful to include
+    Main.NewText($"Metal UI visibility: {(isVisible ? "ON" : "OFF")}");
+}
         
         public override void Unload()
         {
@@ -157,7 +183,7 @@ namespace MistbornMod.UI
         public override void PostUpdateEverything()
         {
             // Handle toggle hotkey
-            if (ToggleUIHotkey?.JustPressed ?? false)
+    if (ToggleUIHotkey != null && ToggleUIHotkey.JustPressed)
             {
                 isVisible = !isVisible;
             }
@@ -310,19 +336,24 @@ namespace MistbornMod.UI
         }
         
         private void DrawUI(SpriteBatch spriteBatch)
-        {
-            if (!isVisible) return;
-            
-            // Get player and mod player
-            Player player = Main.LocalPlayer;
-            MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
-            
-            // Only show UI for Mistborn or Misting players
-            if (!modPlayer.IsMistborn && !modPlayer.IsMisting) return;
-            
-            // Clear the cached lists before populating
-            statusTexts.Clear();
-            interactionRects.Clear();
+{
+    if (!isVisible) return;
+    
+    // Get player and mod player
+    Player player = Main.LocalPlayer;
+    MistbornPlayer modPlayer = player.GetModPlayer<MistbornPlayer>();
+    
+    // Only show UI for Mistborn or Misting players with discovered abilities
+    if (!modPlayer.IsMistborn && (!modPlayer.IsMisting || !modPlayer.HasDiscoveredMistingAbility))
+    {
+        // Debug: Uncomment this to see why UI isn't showing
+        // Main.NewText($"UI not showing: IsMistborn={modPlayer.IsMistborn}, IsMisting={modPlayer.IsMisting}, HasDiscoveredAbility={modPlayer.HasDiscoveredMistingAbility}");
+        return;
+    }
+    
+    // Clear the cached lists before populating
+    statusTexts.Clear();
+    interactionRects.Clear();
             
             // Add title
             statusTexts.Add((modPlayer.IsMistborn ? "MISTBORN RESERVES:" : "MISTING RESERVES:", Color.Gold, null, true));
@@ -389,125 +420,114 @@ namespace MistbornMod.UI
         }
         
         private void DrawMetalBar(SpriteBatch spriteBatch, MetalType metal, MistbornPlayer modPlayer, int index)
+{
+    // Determine position based on whether this bar is unlinked
+    Vector2 barPos;
+    if (unlinkedBars[metal])
+    {
+        barPos = barPositions[metal] * scale;
+    }
+    else
+    {
+        barPos = position + new Vector2(0, (index + 2) * LINE_HEIGHT) * scale;
+    }
+    
+    // Get metal reserves
+    int reserve = modPlayer.MetalReserves.TryGetValue(metal, out int value) ? value : 0;
+    
+    // Calculate time values
+    float timeInSeconds = reserve / 60f;
+    string timeDisplay = timeInSeconds > 60 ? 
+        $"{Math.Floor(timeInSeconds / 60):0}m {timeInSeconds % 60:0}s" : 
+        $"{timeInSeconds:0.0}s";
+    
+    // Check burning status
+    bool isBurning = false;
+    if (metal == MetalType.Steel)
+        isBurning = modPlayer.IsActivelySteelPushing;
+    else if (metal == MetalType.Iron)
+        isBurning = modPlayer.IsActivelyIronPulling;
+    else if (metal == MetalType.Chromium)
+        isBurning = modPlayer.IsActivelyChromiumStripping;
+    else
+        isBurning = modPlayer.BurningMetals.TryGetValue(metal, out bool burning) && burning;
+    
+    // Get status text
+    string status = isBurning ? 
+        (modPlayer.IsFlaring ? "FLARING" : "BURNING") : 
+        "INACTIVE";
+    
+    // Get metal color
+    Color metalColor = metalColors.TryGetValue(metal, out Color color) ? color : Color.White;
+    
+    // Adjust color for burning/flaring
+    if (isBurning)
+    {
+        if (modPlayer.IsFlaring)
         {
-            // Determine position based on whether this bar is unlinked
-            Vector2 barPos;
-            if (unlinkedBars[metal])
-            {
-                barPos = barPositions[metal] * scale;
-            }
-            else
-            {
-                barPos = position + new Vector2(0, (index + 2) * LINE_HEIGHT) * scale;
-            }
-            
-            // Get metal reserves
-            int reserve = modPlayer.MetalReserves.TryGetValue(metal, out int value) ? value : 0;
-            
-            // Calculate time values
-            float timeInSeconds = reserve / 60f;
-            string timeDisplay = timeInSeconds > 60 ? 
-                $"{Math.Floor(timeInSeconds / 60):0}m {timeInSeconds % 60:0}s" : 
-                $"{timeInSeconds:0.0}s";
-            
-            // Check burning status
-            bool isBurning = false;
-            if (metal == MetalType.Steel)
-                isBurning = modPlayer.IsActivelySteelPushing;
-            else if (metal == MetalType.Iron)
-                isBurning = modPlayer.IsActivelyIronPulling;
-            else if (metal == MetalType.Chromium)
-                isBurning = modPlayer.IsActivelyChromiumStripping;
-            else
-                isBurning = modPlayer.BurningMetals.TryGetValue(metal, out bool burning) && burning;
-            
-            // Get status text
-            string status = isBurning ? 
-                (modPlayer.IsFlaring ? "FLARING" : "BURNING") : 
-                "INACTIVE";
-            
-            // Get metal color
-            Color metalColor = metalColors.TryGetValue(metal, out Color color) ? color : Color.White;
-            
-            // Adjust color for burning/flaring
-            if (isBurning)
-            {
-                if (modPlayer.IsFlaring)
-                {
-                    // Pulse effect for flaring
-                    float pulse = 0.8f + (float)Math.Sin(Main.GlobalTimeWrappedHourly * 6) * 0.2f;
-                    metalColor = new Color(
-                        Math.Min(255, (int)(metalColor.R * 1.7f * pulse)),
-                        Math.Min(255, (int)(metalColor.G * 1.7f * pulse)),
-                        Math.Min(255, (int)(metalColor.B * 1.7f * pulse))
-                    );
-                }
-                else
-                {
-                    // Brighter for burning
-                    metalColor = new Color(
-                        Math.Min(255, (int)(metalColor.R * 1.3f)),
-                        Math.Min(255, (int)(metalColor.G * 1.3f)),
-                        Math.Min(255, (int)(metalColor.B * 1.3f))
-                    );
-                }
-            }
-            
-            // Get hotkey for this metal
-            string hotkey = modPlayer.GetHotkeyDisplayForMetal(metal);
-            
-            // Calculate percentage
-            float percentage = modPlayer.GetMetalReservesPercentage(metal) * 100;
-            
-            // Draw background for this bar
-            Rectangle barRect = new Rectangle(
-                (int)(barPos.X - 10 * scale), 
-                (int)(barPos.Y - 5 * scale), 
-                (int)(280 * scale),  
-                (int)(25 * scale)); 
-            
-            // Different background color if unlinked
-            Color bgColor = unlinkedBars[metal] ? new Color(20, 20, 30, 150) : new Color(0, 0, 0, 150);
-            
-            spriteBatch.Draw(
-                Terraria.GameContent.TextureAssets.MagicPixel.Value, 
-                barRect, 
-                bgColor);
-                
-            // Add to interaction rects
-            interactionRects.Add((barRect, metal, false));
-            
-            // Draw the shortened bar based on style
-            string barText = "";
-            switch (currentBarStyle)
-            {
-                case BarStyle.Blocks:
-                    barText = DrawBlockBar(percentage);
-                    break;
-                case BarStyle.Pips:
-                    barText = DrawPipBar(percentage);
-                    break;
-                case BarStyle.Gradient:
-                    barText = DrawGradientBar(percentage);
-                    break;
-            }
-            
-            // Combine all info
-            string metalText = $"{metal} {hotkey} {barText} {timeDisplay} - {status}";
-            
-            // Draw text
-            Terraria.Utils.DrawBorderStringFourWay(
-                spriteBatch,
-                Terraria.GameContent.FontAssets.MouseText.Value,
-                metalText,
-                barPos.X,
-                barPos.Y,
-                metalColor,
-                Color.Black,
-                Vector2.Zero,
-                scale
+            // Pulse effect for flaring
+            float pulse = 0.8f + (float)Math.Sin(Main.GlobalTimeWrappedHourly * 6) * 0.2f;
+            metalColor = new Color(
+                Math.Min(255, (int)(metalColor.R * 1.7f * pulse)),
+                Math.Min(255, (int)(metalColor.G * 1.7f * pulse)),
+                Math.Min(255, (int)(metalColor.B * 1.7f * pulse))
             );
         }
+        else
+        {
+            // Brighter for burning
+            metalColor = new Color(
+                Math.Min(255, (int)(metalColor.R * 1.3f)),
+                Math.Min(255, (int)(metalColor.G * 1.3f)),
+                Math.Min(255, (int)(metalColor.B * 1.3f))
+            );
+        }
+    }
+    
+    // Get hotkey for this metal
+    string hotkey = modPlayer.GetHotkeyDisplayForMetal(metal);
+    
+    // Calculate percentage
+    float percentage = modPlayer.GetMetalReservesPercentage(metal) * 100;
+    
+    // Draw background for this bar
+    Rectangle barRect = new Rectangle(
+        (int)(barPos.X - 10 * scale), 
+        (int)(barPos.Y - 5 * scale), 
+        (int)(280 * scale),  
+        (int)(25 * scale)); 
+    
+    // Different background color if unlinked
+    Color bgColor = unlinkedBars[metal] ? new Color(20, 20, 30, 150) : new Color(0, 0, 0, 150);
+    
+    spriteBatch.Draw(
+        Terraria.GameContent.TextureAssets.MagicPixel.Value, 
+        barRect, 
+        bgColor);
+        
+    // Add to interaction rects
+    interactionRects.Add((barRect, metal, false));
+    
+    // Always use Gradient style
+    string barText = DrawGradientBar(percentage);
+    
+    // Combine all info
+    string metalText = $"{metal} {hotkey} {barText} {timeDisplay} - {status}";
+    
+    // Draw text
+    Terraria.Utils.DrawBorderStringFourWay(
+        spriteBatch,
+        Terraria.GameContent.FontAssets.MouseText.Value,
+        metalText,
+        barPos.X,
+        barPos.Y,
+        metalColor,
+        Color.Black,
+        Vector2.Zero,
+        scale
+    );
+}
+
         
         private string DrawBlockBar(float percentage)
         {
@@ -569,77 +589,66 @@ namespace MistbornMod.UI
         }
         
         private void DrawTotalReserves(SpriteBatch spriteBatch, MistbornPlayer modPlayer)
-        {
-            // Calculate position for the footer
-            Vector2 footerPos = position + new Vector2(0, (GetMetalCount(modPlayer) + 3) * LINE_HEIGHT) * scale;
-            
-            // Background
-            Rectangle footerRect = new Rectangle(
-                (int)(footerPos.X - 10 * scale), 
-                (int)(footerPos.Y - 5 * scale), 
-                (int)(280 * scale),  
-                (int)(25 * scale)); 
-            
-            spriteBatch.Draw(
-                Terraria.GameContent.TextureAssets.MagicPixel.Value, 
-                footerRect, 
-                new Color(0, 0, 0, 150));
-            
-            // Calculate total reserves
-            float totalPercentage = modPlayer.GetTotalReservesPercentage();
-            int vialsUsed = (int)Math.Ceiling(totalPercentage * 6); // Max 6 vials
-            
-            // Create bar based on style
-            string totalBar = "";
-            switch (currentBarStyle)
-            {
-                case BarStyle.Blocks:
-                    totalBar = DrawBlockBar(totalPercentage * 100);
-                    break;
-                case BarStyle.Pips:
-                    totalBar = DrawPipBar(totalPercentage * 100);
-                    break;
-                case BarStyle.Gradient:
-                    totalBar = DrawGradientBar(totalPercentage * 100);
-                    break;
-            }
-            
-            string totalText = $"TOTAL: {totalBar} {vialsUsed}/6 vials ({(totalPercentage * 100):F0}%)";
-            
-            // Choose color based on how full reserves are
-            Color totalColor = totalPercentage < 0.33f ? 
-                Color.LimeGreen : 
-                (totalPercentage < 0.66f ? Color.Yellow : Color.OrangeRed);
-            
-            // Draw text
-            Terraria.Utils.DrawBorderStringFourWay(
-                spriteBatch,
-                Terraria.GameContent.FontAssets.MouseText.Value,
-                totalText,
-                footerPos.X,
-                footerPos.Y,
-                totalColor,
-                Color.Black,
-                Vector2.Zero,
-                scale
-            );
-            
-            // Help text
-            Vector2 helpPos = footerPos + new Vector2(0, LINE_HEIGHT * scale);
-            string helpText = "Press [M] to hide UI • Right-click bars to unlink • Drag to move";
-            
-            Terraria.Utils.DrawBorderStringFourWay(
-                spriteBatch,
-                Terraria.GameContent.FontAssets.MouseText.Value,
-                helpText,
-                helpPos.X,
-                helpPos.Y,
-                new Color(200, 200, 200),
-                Color.Black,
-                Vector2.Zero,
-                scale * 0.8f
-            );
-        }
+{
+    // Calculate position for the footer
+    Vector2 footerPos = position + new Vector2(0, (GetMetalCount(modPlayer) + 3) * LINE_HEIGHT) * scale;
+    
+    // Background
+    Rectangle footerRect = new Rectangle(
+        (int)(footerPos.X - 10 * scale), 
+        (int)(footerPos.Y - 5 * scale), 
+        (int)(280 * scale),  
+        (int)(25 * scale)); 
+    
+    spriteBatch.Draw(
+        Terraria.GameContent.TextureAssets.MagicPixel.Value, 
+        footerRect, 
+        new Color(0, 0, 0, 150));
+    
+    // Add footer rect to interaction list to enable dragging
+    interactionRects.Add((footerRect, null, true));
+    
+    // Calculate total reserves
+    float totalPercentage = modPlayer.GetTotalReservesPercentage();
+    int vialsUsed = (int)Math.Ceiling(totalPercentage * 6); // Max 6 vials
+    
+    // Simpler display format without the complex bar
+    string totalText = $"TOTAL: {vialsUsed}/6 vials ({(totalPercentage * 100):F0}%)";
+    
+    // Choose color based on how full reserves are
+    Color totalColor = totalPercentage < 0.33f ? 
+        Color.LimeGreen : 
+        (totalPercentage < 0.66f ? Color.Yellow : Color.OrangeRed);
+    
+    // Draw text
+    Terraria.Utils.DrawBorderStringFourWay(
+        spriteBatch,
+        Terraria.GameContent.FontAssets.MouseText.Value,
+        totalText,
+        footerPos.X,
+        footerPos.Y,
+        totalColor,
+        Color.Black,
+        Vector2.Zero,
+        scale
+    );
+    
+    // Help text
+    Vector2 helpPos = footerPos + new Vector2(0, LINE_HEIGHT * scale);
+    string helpText = "Press [M] to hide UI • Right-click bars to unlink • Drag to move";
+    
+    Terraria.Utils.DrawBorderStringFourWay(
+        spriteBatch,
+        Terraria.GameContent.FontAssets.MouseText.Value,
+        helpText,
+        helpPos.X,
+        helpPos.Y,
+        new Color(200, 200, 200),
+        Color.Black,
+        Vector2.Zero,
+        scale * 0.8f
+    );
+}
         
         private int GetMetalCount(MistbornPlayer modPlayer)
         {
@@ -665,44 +674,42 @@ namespace MistbornMod.UI
     }
     
     // Configuration class to store UI settings
-    public class MetalUIConfig : ModConfig
+   public class MetalUIConfig : ModConfig
+{
+    public override ConfigScope Mode => ConfigScope.ClientSide;
+    
+    [Header("$Mods.MistbornMod.Config.UISettings")]
+    
+    [DefaultValue(1.0f)]
+    [Range(0.5f, 2.0f)]
+    [Increment(0.1f)]
+    public float UIScale { get; set; } = 1.0f;
+    
+    public Vector2 DefaultPosition { get; set; } = new Vector2(30, 80);
+    
+    [DefaultValue(true)]
+    public bool AllowDragging { get; set; } = true;
+    
+    // No longer need BarStyle as we only use Gradient
+    
+    [DefaultValue(true)]
+    public bool ShowByDefault { get; set; } = true;
+    
+    // Store which metals are unlinked (serialized as string keys for enum compatibility)
+    [JsonProperty]
+    public Dictionary<string, bool> UnlinkedMetals { get; set; } = new Dictionary<string, bool>();
+    
+    // Store positions of individual metals
+    [JsonProperty]
+    public Dictionary<string, Vector2> MetalPositions { get; set; } = new Dictionary<string, Vector2>();
+    
+    public override void OnChanged()
     {
-        public override ConfigScope Mode => ConfigScope.ClientSide;
-        
-        [Header("$Mods.MistbornMod.Config.UISettings")]
-        
-        [DefaultValue(1.0f)]
-        [Range(0.5f, 2.0f)]
-        [Increment(0.1f)]
-        public float UIScale { get; set; } = 1.0f;
-        
-        public Vector2 DefaultPosition { get; set; } = new Vector2(30, 80);
-        
-        [DefaultValue(true)]
-        public bool AllowDragging { get; set; } = true;
-        
-        [DefaultValue(DraggableMetalUI.BarStyle.Blocks)]
-        [DrawTicks]
-        public DraggableMetalUI.BarStyle BarStyle { get; set; } = DraggableMetalUI.BarStyle.Blocks;
-        
-        [DefaultValue(true)]
-        public bool ShowByDefault { get; set; } = true;
-        
-        // Store which metals are unlinked (serialized as string keys for enum compatibility)
-        [JsonProperty]
-        public Dictionary<string, bool> UnlinkedMetals { get; set; } = new Dictionary<string, bool>();
-        
-        // Store positions of individual metals
-        [JsonProperty]
-        public Dictionary<string, Vector2> MetalPositions { get; set; } = new Dictionary<string, Vector2>();
-        
-        public override void OnChanged()
+        // Apply settings immediately when changed
+        if (DraggableMetalUI.Instance != null)
         {
-            // Apply settings immediately when changed
-            if (DraggableMetalUI.Instance != null)
-            {
-                DraggableMetalUI.Instance.ApplyConfig();
-            }
+            DraggableMetalUI.Instance.ApplyConfig();
         }
     }
+}
 }

@@ -38,14 +38,14 @@ namespace MistbornMod
         {
             progress.Message = "Spawning Zinc Ore"; // Message for WorldGen Previewer
 
-            int oreCount = (int)(Main.maxTilesX * Main.maxTilesY * 0.0004);
+            int oreCount = (int)(Main.maxTilesX * Main.maxTilesY * 0.02);
             oreCount = WorldGen.genRand.Next((int)(oreCount * 0.8), (int)(oreCount * 1.2));
             int attemptsMade = 0; // Renamed for clarity
 
             for (int i = 0; i < oreCount; i++)
             {
                 int x = WorldGen.genRand.Next(100, Main.maxTilesX - 100);
-                int y = WorldGen.genRand.Next((int)Main.worldSurface + 50, Main.maxTilesY - 200);
+                int y = WorldGen.genRand.Next((int)Main.worldSurface + 50, Main.maxTilesY - 150);
                 int size = WorldGen.genRand.Next(3, 9);
 
                 // --- CORRECTED CODE BELOW ---
