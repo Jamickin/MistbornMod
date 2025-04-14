@@ -2,6 +2,8 @@ using Terraria;
 using Terraria.ID;
 using Microsoft.Xna.Framework;
 using MistbornMod.Utils;
+using System; // <--- Add this line
+
 
 namespace MistbornMod.Buffs
 {
@@ -171,15 +173,29 @@ namespace MistbornMod.Buffs
                     {
                         pullDirection.Normalize();
                         if (player.velocity.LengthSquared() < currentMaxSpeedSq)
-                        {
-                            player.velocity += pullDirection * currentPlayerPullForce;
-                            playerPullCooldown = modPlayer.IsFlaring ? 5 : 8; // Shorter cooldown when flaring
-                            
-                            // Cancel fall damage when pulling forcefully
-                            if (modPlayer.IsFlaring) {
-                                player.fallStart = (int)(player.position.Y / 16f);
-                            }
-                        }
+{
+    // Calculate what the new velocity would be
+    Vector2 newVelocity = player.velocity + (pullDirection * currentPlayerPullForce);
+    
+    // Only apply if it wouldn't exceed max speed
+    if (newVelocity.LengthSquared() < currentMaxSpeedSq * 1.1f)  // Add 10% buffer
+    {
+        player.velocity = newVelocity;
+    }
+    else
+    {
+        // If exceeding max speed, normalize and set to max
+        newVelocity.Normalize();
+        player.velocity = newVelocity * (float)Math.Sqrt(currentMaxSpeedSq);
+    }
+    
+    playerPullCooldown = modPlayer.IsFlaring ? 5 : 8;
+    
+    // Cancel fall damage when pulling forcefully
+    if (modPlayer.IsFlaring) {
+        player.fallStart = (int)(player.position.Y / 16f);
+    }
+}
                     }
                 }
             }

@@ -35,6 +35,7 @@ namespace MistbornMod.Utils
                                   npc.type == NPCID.TheDestroyerBody ||
                                   npc.type == NPCID.TheDestroyerTail ||
                                   npc.type == NPCID.Mimic;
+                                  
             return wearsArmor || isSpecificType;
         }
         
@@ -169,7 +170,18 @@ namespace MistbornMod.Utils
                    tileType == TileID.DisplayDoll ||         // Display doll (metal stand)
                    tileType == TileID.WeaponsRack ||         // Weapons rack
                    tileType == TileID.TargetDummy ||         // Training dummy
-                   tileType == TileID.MinecartTrack;         // Minecart track
+                   tileType == TileID.MinecartTrack ||         // Minecart track
+                   tileType == TileID.Candelabras ||  // Add candles
+           tileType == TileID.Candles ||
+           tileType == TileID.HangingLanterns ||  // Add lanterns
+           tileType == TileID.WaterFountain ||
+           tileType == TileID.CopperCoinPile ||  // Add coins
+           tileType == TileID.SilverCoinPile ||
+           tileType == TileID.GoldCoinPile ||
+           tileType == TileID.PlatinumCoinPile ||
+           tileType == TileID.CopperPlating ||  // Add plating
+           tileType == TileID.GoldBirdCage;
+
         }
         
         /// <summary>

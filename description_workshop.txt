@@ -8,9 +8,9 @@ FEATURES:
 - Metal burning mechanics with gradually depleting reserves
 - Hold key mechanics for Steel and Iron to push and pull on metals
 - FLARE your metals for double power (but double consumption)
-- NEW! Metal Detection feature to find metals without burning reserves
-- NEW! Misting system - start with a random metal ability
-- NEW! Text-based Metal Reserves UI - easily track your remaining reserves
+- Metal Detection feature to find metals without burning reserves
+- Misting system - start with a random metal ability
+- Improved UI system - easily track your remaining reserves
 - New ore: Zinc, used in crafting zinc and brass vials
 - Complete Mistborn experience with visual and sound effects
 
@@ -34,7 +34,7 @@ CONTROLS:
 
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 0.9.5 - Added Metal Reserves UI, fixed Misting system, and improved metal detection! Also Fixed World Generation of Zinc!
+Version 1.0.0 - Major update with improved Metal Reserves UI, fixed Misting system, enhanced metal detection, and better zinc ore generation. Performance and stability improvements across all features.
 
 Credits:
 - Mod created by James Wheeler

@@ -37,15 +37,14 @@ namespace MistbornMod.Tiles
         // --- Item Drop Logic ---
         // (Keep your KillTile method as is, assuming you have or will create Items.ZincOreItem)
         public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
-        {
-            if (!fail && !noItem)
-            {
-                // Ensure the path to your item is correct
-                // Example: Item.NewItem(new Terraria.DataStructures.EntitySource_TileBreak(i, j), i * 16, j * 16, 16, 16, ModContent.ItemType<Items.Materials.ZincOreItem>());
-
-                // --- Make sure this line points to your actual Zinc Ore ITEM class ---
-                // Item.NewItem(new Terraria.DataStructures.EntitySource_TileBreak(i, j), i * 16, j * 16, 16, 16, ModContent.ItemType<Items.ZincOreItem>()); // Adjust path if needed
-            }
-        }
+{
+    if (!fail && !noItem)
+    {
+        // Use the proper entity source
+        var source = new Terraria.DataStructures.EntitySource_TileBreak(i, j);
+        // This is the key fix - specify the correct item to drop
+        Item.NewItem(source, i * 16, j * 16, 16, 16, ModContent.ItemType<Items.ZincOre>());
+    }
+}
     }
 }

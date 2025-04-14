@@ -44,22 +44,10 @@ namespace MistbornMod
                     Mod.Logger.Info($"New player assigned Misting ability: {randomMetal}");
                 }
                 
-                // Give them a metal tester
-                Player.QuickSpawnItem(Player.GetSource_GiftOrReward(), ModContent.ItemType<MetalTester>(), 1);
                 
                 // Give them a hint in chat
-                Main.NewText("You feel a strange connection to the mists. Find a Metal Tester to learn more.", 220, 230, 255);
-                
-                // Give them a single vial of their metal (that they'll need to discover)
-                if (modPlayer.IsMisting && modPlayer.MistingMetal.HasValue)
-                {
-                    int vialType = GetVialTypeForMetal(modPlayer.MistingMetal.Value);
-                    if (vialType > 0)
-                    {
-                        Player.QuickSpawnItem(Player.GetSource_GiftOrReward(), vialType, 1);
-                        Main.NewText("You find a strange vial in your pocket...", 180, 220, 255);
-                    }
-                }
+                Main.NewText("You feel a connection to the mists. Try crafting a Metal Tester at an anvil.", 220, 230, 255);
+                                
             }
         }
         

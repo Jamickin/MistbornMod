@@ -51,8 +51,14 @@ namespace MistbornMod
                 // --- CORRECTED CODE BELOW ---
                 // WorldGen.TileRunner returns void, so we cannot assign its result to a bool.
                 // We simply call it to attempt the ore placement.
-                WorldGen.TileRunner(x, y, (double)size, WorldGen.genRand.Next(2, 6), ModContent.TileType<Tiles.ZincOreTile>(), false, 0f, 0f, false, true);
-
+WorldGen.TileRunner(
+    x, y,                                           // Position
+    size,                                           // Size of ore vein
+    WorldGen.genRand.Next(3, 8),                    // Steps (increased for more reliable placement)
+    ModContent.TileType<Tiles.ZincOreTile>(),       // Tile type
+    false,                                          // Replace only air?
+    0f, 0f,                                         // Direction bias
+    false, true);                                   // No random direction change, use default strength
                 // Increment the counter for each attempt made.
                 attemptsMade++;
 

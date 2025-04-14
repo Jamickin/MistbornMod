@@ -19,7 +19,7 @@ namespace MistbornMod
         public Dictionary<MetalType, bool> BurningMetals { get; private set; } = new Dictionary<MetalType, bool>();
         
         // Metal reserves manager
-        private MetalReserveManager _reserveManager;
+public MetalReserveManager _reserveManager;
         
         // Property for accessing metal reserves (for backwards compatibility)
         public Dictionary<MetalType, int> MetalReserves => _reserveManager != null ? 
@@ -29,6 +29,7 @@ namespace MistbornMod
             : new Dictionary<MetalType, int>();
         
         // Hold-type mechanic flags
+        
         public bool IsActivelySteelPushing { get; private set; } = false;
         public bool IsActivelyIronPulling { get; private set; } = false;
         public bool IsActivelyChromiumStripping { get; set; } = false;
@@ -650,16 +651,16 @@ private void ShowCannotBurnMessage(MetalType metal)
             string keybind = "";
             switch (metal)
             {
-                case MetalType.Iron: keybind = MistbornMod.IronToggleHotkey?.GetAssignedKeys()[0] ?? "F"; break;
-                case MetalType.Steel: keybind = MistbornMod.SteelToggleHotkey?.GetAssignedKeys()[0] ?? "J"; break;
-                case MetalType.Pewter: keybind = MistbornMod.PewterToggleHotkey?.GetAssignedKeys()[0] ?? "G"; break;
-                case MetalType.Tin: keybind = MistbornMod.TinToggleHotkey?.GetAssignedKeys()[0] ?? "H"; break;
-                case MetalType.Brass: keybind = MistbornMod.BrassToggleHotkey?.GetAssignedKeys()[0] ?? "B"; break;
-                case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys()[0] ?? "Z"; break;
-                case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys()[0] ?? "V"; break;
-                case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys()[0] ?? "K"; break;
-                case MetalType.Copper: keybind = MistbornMod.CopperToggleHotkey?.GetAssignedKeys()[0] ?? "C"; break;
-                case MetalType.Bronze: keybind = MistbornMod.BronzeToggleHotkey?.GetAssignedKeys()[0] ?? "N"; break;
+                case MetalType.Iron: keybind = MistbornMod.IronToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "F"; break;
+                case MetalType.Steel: keybind = MistbornMod.SteelToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "J"; break;
+                case MetalType.Pewter: keybind = MistbornMod.PewterToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "G"; break;
+                case MetalType.Tin: keybind = MistbornMod.TinToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "H"; break;
+                case MetalType.Brass: keybind = MistbornMod.BrassToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "B"; break;
+                case MetalType.Zinc: keybind = MistbornMod.ZincToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "Z"; break;
+                case MetalType.Atium: keybind = MistbornMod.AtiumToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "V"; break;
+                case MetalType.Chromium: keybind = MistbornMod.ChromiumToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "K"; break;
+                case MetalType.Copper: keybind = MistbornMod.CopperToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "C"; break;
+                case MetalType.Bronze: keybind = MistbornMod.BronzeToggleHotkey?.GetAssignedKeys().FirstOrDefault() ?? "N"; break;
                 default: keybind = ""; break;
             }
             return $"[{keybind}]";

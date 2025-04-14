@@ -128,6 +128,18 @@ namespace MistbornMod.Recipes
             // Require a special crafting station
             atiumBeadRecipe.AddTile(TileID.DemonAltar); // At a Demon Altar
             atiumBeadRecipe.Register();
+
+            Recipe recipe = Recipe.Create(ModContent.ItemType<MetalTester>());
+    recipe.AddIngredient(ItemID.Glass, 3);          // Reduced from 5
+    recipe.AddIngredient(ItemID.IronBar, 1);        // Reduced from 2
+    recipe.AddIngredient(ItemID.CopperBar, 1);      // Reduced from 2
+    // Make it an alternative requirement (iron OR lead)
+    Recipe recipe2 = Recipe.Create(ModContent.ItemType<MetalTester>());
+    recipe2.AddIngredient(ItemID.Glass, 3);
+    recipe2.AddIngredient(ItemID.LeadBar, 1);
+    recipe2.AddIngredient(ItemID.CopperBar, 1);
+    recipe2.AddTile(TileID.Anvils);
+    recipe2.Register();
         }
     }
 }

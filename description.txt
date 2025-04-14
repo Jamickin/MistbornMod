@@ -15,21 +15,21 @@ FLARING: Press [LeftAlt] when burning metals to increase their power!
 Flaring doubles the effectiveness of all metals but also doubles consumption rate.
 
 METAL DETECTION: Press [X] to detect nearby metals without consuming reserves!
-Easily find metal objects with blue lines while exploring.
+Now shows ALL metal objects in radius with blue lines while exploring.
 
 METAL RESERVES: Your body can hold a limited amount of metal! Each vial gives you 60 seconds of reserves,
 and you can store up to 6 vials worth of metals total.
 
-NEW! METAL RESERVES UI: Press [M] to toggle a text display showing your current metal reserves,
+METAL RESERVES UI: Press [M] to toggle the improved text display showing your current metal reserves,
 burn status, and remaining time for each metal.
 
-NEW! MISTING SYSTEM: Players now start with a random Misting ability! Use the Metal Tester to discover which metal you can burn,
+MISTING SYSTEM: Players start with a random Misting ability! Craft a Metal Tester to discover which metal you can burn,
 or find a Lerasium Bead to become a full Mistborn.
 
-Find metal vials and create your own at alchemy stations. Discover metallic ores in the world to brew new allomantic metals.
+Craft metal vials at alchemy stations. Mine zinc ore and discover metallic ores in the world to brew new allomantic metals.
 
 Survive, fight, and navigate like a true Mistborn!
 
-Version 0.9.5 - Added Metal Reserves UI, fixed Misting system, and improved metal detection! Also Fixed World Generation of Zinc!
+Version 1.0.0 - Major stability update with improved Metal Reserves UI, fixed Misting system, enhanced metal detection that shows all metals in range, and fixed zinc ore generation.
 
-Special thanks to Claude AI by Anthropic for assistance with coding and implementation of several features in this version!
+Special thanks to Claude AI by Anthropic for assistance with coding and implementation of features in this version!
