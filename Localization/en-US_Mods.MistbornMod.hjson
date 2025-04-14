@@ -186,3 +186,55 @@ Keybinds: {
 	"Burn Copper.DisplayName": Burn Copper
 	"Detect Metals.DisplayName": Detect Nearby Metals (No Consumption)
 }
+
+Configs: {
+	MetalUIConfig: {
+		DisplayName: Metal UI Settings
+
+		UIScale: {
+			Label: UI Scale
+			Tooltip: Scale the Metal UI (0.5 to 2.0)
+		}
+
+		DefaultPosition: {
+			Label: Default Position
+			Tooltip: Default position for the Metal UI
+		}
+
+		AllowDragging: {
+			Label: Allow Dragging
+			Tooltip: Allow dragging the Metal UI with mouse
+		}
+
+		BarStyle: {
+			Label: Bar Style
+			Tooltip: Visual style for metal reserve bars
+		}
+
+		ShowByDefault: {
+			Label: Show UI By Default
+			Tooltip: Whether the UI is visible when you start the game
+		}
+
+		UnlinkedMetals: {
+			Label: Unlinked Metals
+			Tooltip: ""
+		}
+
+		MetalPositions: {
+			Label: Metal Positions
+			Tooltip: ""
+		}
+	}
+
+	UISettings: UI Settings
+
+	BarStyle: {
+		Tooltip: ""
+		Blocks.Label: Blocks
+		Pips.Label: Pips
+		Gradient.Label: Gradient
+	}
+}
+
+Config.UISettings: U I Scale Header
