@@ -95,63 +95,96 @@ namespace MistbornMod
         /// <param name="durationValue">Amount to add</param>
         /// <returns>True if successful, false if at max</returns>
         public bool AddReserves(MetalType metal, int durationValue)
+{
+    // Check if player can metabolize this metal (either Mistborn or correct Misting type)
+    bool canMetabolizeThisMetal = _modPlayer.IsMistborn || 
+                                 (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue && 
+                                  _modPlayer.MistingMetal.Value == metal);
+    
+    if (!canMetabolizeThisMetal)
+    {
+        if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue)
         {
-            if (!_modPlayer.IsMistborn)
-            {
-                Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
-                SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
-                return false;
-            }
-            
-            int currentReserve = GetReserves(metal);
-            
-            // Chromium is exempt from total reserve cap
-            if (metal != MetalType.Chromium)
-            {
-                int currentTotalReserves = GetTotalReservesExcluding(MetalType.Chromium);
-                
-                // Calculate how much we can actually add based on total cap
-                int maxAddToTotal = MAX_TOTAL_RESERVES - currentTotalReserves;
-                int actualAmountToAdd = Math.Min(durationValue, maxAddToTotal);
-                
-                if (actualAmountToAdd <= 0)
-                {
-                    // Can't add any more - metal reserves full
-                    Main.NewText("Your total metal reserves are full!", 255, 100, 100);
-                    SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
-                    return false;
-                }
-                
-                // Add the calculated amount to the reserves
-                SetReserves(metal, currentReserve + actualAmountToAdd);
-                
-                // Sound effect
-                SoundEngine.PlaySound(SoundID.Item3, _player.position);
-                
-                // Feedback to player
-                if (actualAmountToAdd < durationValue)
-                {
-                    Main.NewText("Your total metal reserves are nearly full.", 200, 200, 100);
-                }
-                else
-                {
-                    // Full amount was added - calculate how many seconds of reserve this metal now has
-                    int totalSeconds = GetReserves(metal) / 60;
-                    Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
-                }
-            }
-            else
-            {
-                // Chromium has no cap
-                SetReserves(metal, currentReserve + durationValue);
-                SoundEngine.PlaySound(SoundID.Item3, _player.position);
-                
-                int totalSeconds = GetReserves(metal) / 60;
-                Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
-            }
-            
-            return true;
+            // Player is a Misting but tried to drink the wrong metal
+            Main.NewText($"As a {_modPlayer.GetMistingName(_modPlayer.MistingMetal.Value)}, you can only metabolize {_modPlayer.MistingMetal.Value}.", 255, 100, 100);
         }
+        else
+        {
+            // Player has no Allomantic abilities
+            Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
+        }
+        SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
+        
+        // If this is their Misting metal, mark as discovered
+        if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue && 
+            _modPlayer.MistingMetal.Value == metal && !_modPlayer.HasDiscoveredMistingAbility)
+        {
+            _modPlayer.HasDiscoveredMistingAbility = true;
+            string mistingName = _modPlayer.GetMistingName(metal);
+            Main.NewText($"You have discovered your ability as a {mistingName}!", 255, 220, 100);
+        }
+        
+        return false;
+    }
+    
+    int currentReserve = GetReserves(metal);
+    
+    // Chromium is exempt from total reserve cap
+    if (metal != MetalType.Chromium)
+    {
+        int currentTotalReserves = GetTotalReservesExcluding(MetalType.Chromium);
+        
+        // Calculate how much we can actually add based on total cap
+        int maxAddToTotal = MAX_TOTAL_RESERVES - currentTotalReserves;
+        int actualAmountToAdd = Math.Min(durationValue, maxAddToTotal);
+        
+        if (actualAmountToAdd <= 0)
+        {
+            // Can't add any more - metal reserves full
+            Main.NewText("Your total metal reserves are full!", 255, 100, 100);
+            SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
+            return false;
+        }
+        
+        // Add the calculated amount to the reserves
+        SetReserves(metal, currentReserve + actualAmountToAdd);
+        
+        // Sound effect
+        SoundEngine.PlaySound(SoundID.Item3, _player.position);
+        
+        // Feedback to player
+        if (actualAmountToAdd < durationValue)
+        {
+            Main.NewText("Your total metal reserves are nearly full.", 200, 200, 100);
+        }
+        else
+        {
+            // Full amount was added - calculate how many seconds of reserve this metal now has
+            int totalSeconds = GetReserves(metal) / 60;
+            Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
+        }
+    }
+    else
+    {
+        // Chromium has no cap
+        SetReserves(metal, currentReserve + durationValue);
+        SoundEngine.PlaySound(SoundID.Item3, _player.position);
+        
+        int totalSeconds = GetReserves(metal) / 60;
+        Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
+    }
+    
+    // If this is their first time using their Misting metal, mark as discovered
+    if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue && 
+        _modPlayer.MistingMetal.Value == metal && !_modPlayer.HasDiscoveredMistingAbility)
+    {
+        _modPlayer.HasDiscoveredMistingAbility = true;
+        string mistingName = _modPlayer.GetMistingName(metal);
+        Main.NewText($"You have discovered your ability as a {mistingName}!", 255, 220, 100);
+    }
+    
+    return true;
+}
         
         /// <summary>
         /// Clear all metal reserves except for a specific type

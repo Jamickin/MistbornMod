@@ -1,3 +1,6 @@
+// Your Tile class name
+Tiles.ZincOreTile.MapEntry: Zinc Ore // The text for the map
+
 Buffs: {
 	IronBuff: {
 		DisplayName: Iron Sight
@@ -98,12 +101,12 @@ Items: {
 
 	BronzeVial: {
 		DisplayName: Bronze Vial
-		Tooltip: A Shiny ore used in Allomantic brewing
+		Tooltip: A small vial with liquid and some metal shavings
 	}
 
 	CopperVial: {
 		DisplayName: Copper Vial
-		Tooltip: A Shiny ore used in Allomantic brewing
+		Tooltip: A small vial with liquid and some metal shavings
 	}
 
 	LerasiumBead: {
