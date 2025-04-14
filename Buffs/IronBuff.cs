@@ -12,7 +12,7 @@ namespace MistbornMod.Buffs
         private const float PullForce = 3.5f; // Base pulling force
         private const float PlayerPullForce = 5f; // Base force to pull the player toward metals
         private const float MaxPlayerPullSpeedSq = 8f * 8f; // Base max squared velocity when player is pulled
-        private const int LineDustType = DustID.MagicMirror; 
+        private const int LineDustType = MetalDetectionSystem.METAL_LINE_DUST_TYPE; 
 
         private int playerPullCooldown = 0;
 

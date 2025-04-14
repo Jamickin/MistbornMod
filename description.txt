@@ -14,11 +14,19 @@ Drink metal vials and burn metals to gain powerful abilities:
 FLARING: Press [LeftAlt] when burning metals to increase their power! 
 Flaring doubles the effectiveness of all metals but also doubles consumption rate.
 
+NEW! METAL DETECTION: Press [X] to detect nearby metals without consuming reserves!
+Easily find metal objects with blue lines while exploring.
+
 METAL RESERVES: Your body can hold a limited amount of metal! Each vial gives you 60 seconds of reserves,
-and you can store up to 6 vials worth of metals total. Toggle the metal reserves UI with [U].
+and you can store up to 6 vials worth of metals total.
+
+NEW! MISTING SYSTEM: Players now start with a random Misting ability! Use the Metal Tester to discover which metal you can burn,
+or find a Lerasium Bead to become a full Mistborn.
 
 Find metal vials and create your own at alchemy stations. Discover metallic ores in the world to brew new allomantic metals.
 
 Survive, fight, and navigate like a true Mistborn!
 
-Version 0.8 - Misting Update! PLayers are now spawned with a random Misting ability! Recipe Changes and drop changes. Using simple buff-UI to show reserves. 
+Version 0.9 - Added Metal Detection feature, Misting system, and fixed multiple bugs!
+
+Special thanks to Claude AI by Anthropic for assistance with coding and implementation of several features in this version!

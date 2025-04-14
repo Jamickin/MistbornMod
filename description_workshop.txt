@@ -8,6 +8,8 @@ FEATURES:
 - Metal burning mechanics with gradually depleting reserves
 - Hold key mechanics for Steel and Iron to push and pull on metals
 - FLARE your metals for double power (but double consumption)
+- NEW! Metal Detection feature to find metals without burning reserves
+- NEW! Misting system - start with a random metal ability
 - New ore: Zinc, used in crafting zinc and brass vials
 - Complete Mistborn experience with visual and sound effects
 
@@ -26,7 +28,12 @@ CONTROLS:
 - Each metal has its own dedicated hotkey (customizable in Controls)
 - Steel and Iron use "hold key" mechanics for dynamic movement
 - Press [Left Alt] to FLARE actively burning metals
+- Press [X] to DETECT metals without consuming reserves
 
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 0.8 - Misting Update! PLayers are now spawned with a random Misting ability! Recipe Changes and drop changes. Using simple buff-UI to show reserves. 
+Version 0.9 - Added Metal Detection feature, Misting system, and fixed multiple bugs!
+
+Credits:
+- Mod created by James Wheeler
+- Special thanks to Claude AI (by Anthropic) for coding assistance and feature implementation

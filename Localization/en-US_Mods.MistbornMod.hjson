@@ -108,17 +108,29 @@ Items: {
 
 	LerasiumBead: {
 		DisplayName: Lerasium Bead
-		Tooltip: ""
+		Tooltip:
+			'''
+			A small metallic bead that contains incredible power
+			Consume to become a Mistborn
+			'''
 	}
 
 	AtiumBead: {
 		DisplayName: Atium Bead
-		Tooltip: ""
+		Tooltip:
+			'''
+			A rare God Metal that grants incredible precognitive abilities
+			Consume to refill Atium reserves
+			'''
 	}
-	
+
 	MetalTester: {
 		DisplayName: Metal Tester
-		Tooltip: Tests your Allomantic affinity\nUse this to discover what metal you can burn
+		Tooltip:
+			'''
+			Tests your Allomantic affinity
+			Use this to discover what metal you can burn
+			'''
 	}
 }
 
@@ -127,21 +139,34 @@ UI: {
 		Title: Metal Reserves
 		TotalCapacity: Total Capacity
 		VialsUsed: Vials Used: {0}/6
-		MistingStatus: {0} - {1}
-	}
-	
-	MistingNames: {
-		Iron: Lurcher
-		Steel: Coinshot
-		Tin: Tineye
-		Pewter: Thug
-		Zinc: Rioter
-		Brass: Soother
-		Copper: Smoker
-		Bronze: Seeker
 	}
 }
 
+MistingNames: {
+	Iron: Lurcher
+	Steel: Coinshot
+	Tin: Tineye
+	Pewter: Thug
+	Zinc: Rioter
+	Brass: Soother
+	Copper: Smoker
+	Bronze: Seeker
+}
+
+Dialogs: {
+	Misting: {
+		NewCharacter: You feel a strange connection to the mists. Use the Metal Tester to discover your Allomantic ability.
+		DiscoveredAbility: You have discovered your ability as a {0}!
+		CannotBurnMetal: You don't have the ability to burn {0}.
+		MetalTesterHint: Your Allomantic ability seems tied to: {0}
+		TryDrinkingVial: Try drinking a vial of this metal to confirm your ability.
+		NoAbility: The tester shows no Allomantic ability. Find a Lerasium Bead to gain powers.
+		AlreadyMistborn: You are already a Mistborn.
+		FoundVial: You find a strange vial in your pocket...
+	}
+
+	MetalDetection.NoReserves: You need Iron or Steel reserves to detect metals!
+}
 
 Keybinds: {
 	"Burn Tin.DisplayName": Burn Tin
@@ -154,14 +179,7 @@ Keybinds: {
 	"Burn Chromium.DisplayName": Test: Empty Reserves
 	"Flare Metals.DisplayName": Flare Metals (Double Power/Consumption)
 	"Toggle Metal UI.DisplayName": Toggle Metal Reserves UI
-	"Burn Bronze.DisplayName": Burn  Bronze
-	"Burn Copper.DisplayName": Burn  Copper
-}
-
-UI: {
-	MetalReserves: {
-		Title: Metal Reserves
-		TotalCapacity: Total Capacity
-		VialsUsed: Vials Used: {0}/6
-	}
+	"Burn Bronze.DisplayName": Burn Bronze
+	"Burn Copper.DisplayName": Burn Copper
+	"Detect Metals.DisplayName": Detect Nearby Metals (No Consumption)
 }

@@ -8,8 +8,7 @@ namespace MistbornMod.Items
     {
         public override void SetStaticDefaults()
         {
-            // DisplayName.SetDefault("Metal Tester");
-            // Tooltip.SetDefault("Tests your Allomantic affinity\nUse this to discover what metal you can burn");
+            // DisplayName and Tooltip are set in Localization files
         }
 
         public override void SetDefaults()
@@ -39,6 +38,7 @@ namespace MistbornMod.Items
             {
                 if (modPlayer.HasDiscoveredMistingAbility)
                 {
+                    // They already know what they are
                     string mistingName = modPlayer.GetMistingName(modPlayer.MistingMetal.Value);
                     Main.NewText($"You are a {mistingName} and can burn {modPlayer.MistingMetal}.", 255, 220, 100);
                 }

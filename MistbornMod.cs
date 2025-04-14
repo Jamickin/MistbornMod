@@ -11,11 +11,12 @@ namespace MistbornMod
         public static ModKeybind BrassToggleHotkey { get; private set; }
         public static ModKeybind ZincToggleHotkey { get; private set; }
         public static ModKeybind AtiumToggleHotkey { get; private set; }
-        public static ModKeybind ChromiumToggleHotkey { get; private set; } // Added Chromium hotkey
+        public static ModKeybind ChromiumToggleHotkey { get; private set; }
         public static ModKeybind FlareToggleHotkey { get; private set; }
         public static ModKeybind CopperToggleHotkey { get; private set; }
-        public static ModKeybind BronzeToggleHotkey { get; private set; }   
-
+        public static ModKeybind BronzeToggleHotkey { get; private set; }
+        // Add the new metal detection hotkey
+        public static ModKeybind MetalDetectionHotkey { get; private set; }
 
         public override void Load()
         {
@@ -29,12 +30,14 @@ namespace MistbornMod
             BrassToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Brass", "B");
             ZincToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Zinc", "Z");
             AtiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Atium", "V");
-            ChromiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Chromium", "K"); // Added Chromium with default key K
+            ChromiumToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Chromium", "K");
             CopperToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Copper", "C");
             BronzeToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Bronze", "N");
-            // Add the flare toggle keybind - use Alt as default since it's commonly available
+            // Add the flare toggle keybind
             FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
             
+            // Add the new metal detection hotkey (using LeftShift as default)
+            MetalDetectionHotkey = KeybindLoader.RegisterKeybind(this, "Detect Metals", "X");
         }
 
         // It's good practice to unload static variables
@@ -47,10 +50,11 @@ namespace MistbornMod
             BrassToggleHotkey = null;
             ZincToggleHotkey = null;
             AtiumToggleHotkey = null;
-            ChromiumToggleHotkey = null; // Added Chromium unload
+            ChromiumToggleHotkey = null;
             FlareToggleHotkey = null;
             CopperToggleHotkey = null;
             BronzeToggleHotkey = null;
+            MetalDetectionHotkey = null; // Unload the new hotkey
         }
     }
 }

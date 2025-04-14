@@ -1,3 +1,3 @@
 displayName = Mistborn
 author = James Wheeler
-version = 0.6
+version = 0.9

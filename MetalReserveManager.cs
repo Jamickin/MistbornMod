@@ -4,6 +4,8 @@ using System.Linq;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
+using Terraria.ModLoader;
+
 
 namespace MistbornMod
 {
@@ -229,34 +231,34 @@ namespace MistbornMod
         /// <param name="tag">Tag to load from</param>
         /// <param name="mod">Mod reference for logging</param>
         public void LoadData(Terraria.ModLoader.IO.TagCompound tag, Mod mod)
+{
+    // Reset state before loading
+    InitializeReserves();
+    
+    if (tag.ContainsKey("Mistborn_ReserveMetals") && tag.ContainsKey("Mistborn_ReserveValues"))
+    {
+        var metalNames = tag.Get<List<string>>("Mistborn_ReserveMetals");
+        var reserveValues = tag.Get<List<int>>("Mistborn_ReserveValues");
+        
+        if (metalNames.Count == reserveValues.Count)
         {
-            // Reset state before loading
-            InitializeReserves();
-            
-            if (tag.ContainsKey("Mistborn_ReserveMetals") && tag.ContainsKey("Mistborn_ReserveValues"))
+            for (int i = 0; i < metalNames.Count; i++)
             {
-                var metalNames = tag.Get<List<string>>("Mistborn_ReserveMetals");
-                var reserveValues = tag.Get<List<int>>("Mistborn_ReserveValues");
-                
-                if (metalNames.Count == reserveValues.Count)
+                if (Enum.TryParse<MetalType>(metalNames[i], out MetalType metal))
                 {
-                    for (int i = 0; i < metalNames.Count; i++)
-                    {
-                        if (Enum.TryParse<MetalType>(metalNames[i], out MetalType metal))
-                        {
-                            _metalReserves[metal] = reserveValues[i];
-                        }
-                        else
-                        {
-                            mod.Logger.Warn($"Failed to parse saved MetalType reserve: {metalNames[i]}");
-                        }
-                    }
+                    _metalReserves[metal] = reserveValues[i];
                 }
                 else
                 {
-                    mod.Logger.Warn("Saved metal reserve data was corrupt (list count mismatch).");
+                    mod.Logger.Warn($"Failed to parse saved MetalType reserve: {metalNames[i]}");
                 }
             }
         }
+        else
+        {
+            mod.Logger.Warn("Saved metal reserve data was corrupt (list count mismatch).");
+        }
+    }
+}
     }
 }
