@@ -17,7 +17,15 @@ namespace MistbornMod
         public static ModKeybind BronzeToggleHotkey { get; private set; }
         // Add the new metal detection hotkey
         public static ModKeybind MetalDetectionHotkey { get; private set; }
-
+        public void SaveConfig(ModConfig config)
+{
+    // This is the correct way to save a ModConfig in tModLoader
+    if (config != null)
+    {
+        // Force a config save
+        Configuration.Save(config);
+    }
+}
         public override void Load()
         {
             // Register the hotkeys when the mod loads
