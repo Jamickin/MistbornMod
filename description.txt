@@ -1,35 +1,54 @@
-The Mistborn Mod brings Allomancy from Brandon Sanderson's Mistborn series to Terraria!
+== MISTBORN MOD ==
 
-Drink metal vials and burn metals to gain powerful abilities:
-- Iron: Pull on metal objects or pull yourself to metal anchors (Hold key)
-- Steel: Push on metal objects or push yourself away from metal anchors (Hold key)
-- Tin: Enhanced senses with night vision and danger detection
-- Pewter: Increased physical abilities including strength, defense, and speed
-- Zinc: Riot the emotions of nearby enemies, making them more vulnerable
-- Brass: Soothe the emotions of nearby enemies, making them less aggressive
-- Copper: Hide your Allomancy from other players
-- Bronze: Detect other players using Allomancy
-- Atium: Become temporarily invulnerable (extremely rare)
+This mod brings the Allomantic magic system from Brandon Sanderson's Mistborn series to Terraria!
 
-FLARING: Press [LeftAlt] when burning metals to increase their power! 
-Flaring doubles the effectiveness of all metals but also doubles consumption rate.
+FEATURES:
+- Nine Allomantic metals to burn, each with unique powers
+- Craft and drink metal vials to store reserves
+- Metal burning mechanics with gradually depleting reserves
+- Hold key mechanics for Steel and Iron to push and pull on metals
+- FLARE your metals for double power (but double consumption)
+- Metal Detection feature to find metals without burning reserves
+- Misting system - start with a random metal ability
+- Improved draggable UI - customize your metal reserve display
+- Distinctive zinc stalagmites rising from the surface
+- Complete Mistborn experience with visual and sound effects
 
-METAL DETECTION: Press [X] to detect nearby metals without consuming reserves!
-Now shows ALL metal objects in radius with blue lines while exploring.
+METALS & ABILITIES:
+- Iron - Pull metals toward you or pull yourself toward metal anchors
+- Steel - Push metals away or launch yourself by pushing against metal anchors
+- Tin - Enhanced senses, night vision, and danger detection
+- Pewter - Enhanced strength, defense, and physical abilities
+- Zinc - Riot emotions of enemies, making them more vulnerable
+- Brass - Soothe emotions of enemies, making them less aggressive
+- Copper - Create a coppercloud that hides your Allomancy
+- Bronze - Detect other Allomancers using metals
+- Atium - Become temporarily invulnerable (extremely rare)
 
-METAL RESERVES: Your body can hold a limited amount of metal! Each vial gives you 60 seconds of reserves,
-and you can store up to 6 vials worth of metals total.
+CONTROLS:
+- Each metal has its own dedicated hotkey (customizable in Controls)
+- Steel and Iron use "hold key" mechanics for dynamic movement
+- Press [Left Alt] to FLARE actively burning metals
+- Press [X] to DETECT metals without consuming reserves
+- Press [M] to toggle the Metal Reserves UI display
 
-METAL RESERVES UI: Press [M] to toggle the improved text display showing your current metal reserves,
-burn status, and remaining time for each metal.
+ENHANCED UI SYSTEM:
+- Fully draggable metal reserves display
+- Right-click bars to unlink individual metals
+- Detailed metal reserves information with burn status
 
-MISTING SYSTEM: Players start with a random Misting ability! Craft a Metal Tester to discover which metal you can burn,
-or find a Lerasium Bead to become a full Mistborn.
+ZINC ORE:
+- Find distinctive zinc stalagmites extending up to 25 blocks high from the surface
+- Highly visible ore formations that are easy to spot while exploring
+- Unique generation makes finding zinc much easier than before
+- Compatible with WorldGenPreviewer mod - watch the stalagmites form in real-time!
+- Includes self-repairing technology that attempts to restore stalagmites damaged by other mods
+- Note: For best results with structure-generating mods, Mistborn Mod should load after them
 
-Craft metal vials at alchemy stations. Mine zinc ore and discover metallic ores in the world to brew new allomantic metals.
+For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Survive, fight, and navigate like a true Mistborn!
+Version 1.1.0 - Major update with improved draggable UI, distinctive zinc ore generation, enhanced metal detection, and stability improvements. Mistwraith Update coming soon!
 
-Version 1.0.0 - Major stability update with improved Metal Reserves UI, fixed Misting system, enhanced metal detection that shows all metals in range, and fixed zinc ore generation.
-
-Special thanks to Claude AI by Anthropic for assistance with coding and implementation of features in this version!
+Credits:
+- Mod created by James Wheeler
+- Special thanks to Claude AI (by Anthropic) for coding assistance and feature implementation

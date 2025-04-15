@@ -10,8 +10,8 @@ FEATURES:
 - FLARE your metals for double power (but double consumption)
 - Metal Detection feature to find metals without burning reserves
 - Misting system - start with a random metal ability
-- Improved UI system - easily track your remaining reserves
-- New ore: Zinc, used in crafting zinc and brass vials
+- Improved draggable UI - customize your metal reserve display
+- Distinctive zinc stalagmites rising from the surface
 - Complete Mistborn experience with visual and sound effects
 
 METALS & ABILITIES:
@@ -32,9 +32,21 @@ CONTROLS:
 - Press [X] to DETECT metals without consuming reserves
 - Press [M] to toggle the Metal Reserves UI display
 
+ENHANCED UI SYSTEM:
+- Fully draggable metal reserves display
+- Right-click bars to unlink individual metals
+- Detailed metal reserves information with burn status
+
+ZINC ORE:
+- Find distinctive zinc stalagmites extending up to 25 blocks high from the surface
+- Highly visible ore formations that are easy to spot while exploring
+- Unique generation makes finding zinc much easier than before
+- Compatible with WorldGenPreviewer mod - watch the stalagmites form in real-time!
+- Custom generation system ensures stalagmites aren't overwritten by terrain
+
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 1.0.0 - Major update with improved Metal Reserves UI, fixed Misting system, enhanced metal detection, and better zinc ore generation. Performance and stability improvements across all features.
+Version 1.1.0 - Major update with improved draggable UI, distinctive zinc ore generation, enhanced metal detection, and stability improvements. Mistwraith Update coming soon!
 
 Credits:
 - Mod created by James Wheeler

@@ -4,8 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using Terraria;
-using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
+using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.UI;
 using System.ComponentModel;
@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using System.Runtime.Serialization;
 using Terraria.GameContent.UI.Elements;
 using Terraria.GameInput;
+
 
 namespace MistbornMod.UI
 {
@@ -103,7 +104,6 @@ namespace MistbornMod.UI
                 barPositions[metal] = Vector2.Zero;
             }
         }
-        
         public override void OnModLoad()
 {
     // Load config
@@ -116,10 +116,8 @@ namespace MistbornMod.UI
     {
         // Create a new config if none exists
         config = new MetalUIConfig();
-        config.Save();
     }
 }
-
 // Make sure the ApplyConfig method properly initializes all values
 internal void ApplyConfig()
 {
@@ -128,7 +126,6 @@ internal void ApplyConfig()
     position = config.DefaultPosition;
     scale = config.UIScale;
     dragEnabled = config.AllowDragging;
-    currentBarStyle = config.BarStyle;
     isVisible = config.ShowByDefault;
     
     // Apply saved positions and unlink status
@@ -156,11 +153,11 @@ private void SaveUIConfiguration()
         config.UnlinkedMetals = unlinkedBars.ToDictionary(x => x.Key.ToString(), x => x.Value);
         config.MetalPositions = barPositions.ToDictionary(x => x.Key.ToString(), x => x.Value);
         
-        // Use the correct method to save the configuration
-        ModContent.GetInstance<MistbornMod>().SaveConfig(config);
+        // Use ConfigManager to save the configuration
+        // Terraria.ModLoader.Config.ConfigManager.Save(config);
     }
-}        
-     public override void OnWorldUnload()
+}       
+    public override void OnWorldUnload()
 {
     // Save position to config
     if (config != null)
@@ -171,8 +168,8 @@ private void SaveUIConfiguration()
         config.UnlinkedMetals = unlinkedBars.ToDictionary(x => x.Key.ToString(), x => x.Value);
         config.MetalPositions = barPositions.ToDictionary(x => x.Key.ToString(), x => x.Value);
         
-        // This is the important line - use ModContent.GetInstance<MetalUIConfig>() instead of calling Save() directly
-        ModContent.GetInstance<MistbornMod>().SaveConfig(config);
+        // Use ConfigManager to save the configuration
+        // Terraria.ModLoader.Config.ConfigManager.Save(config);
     }
 }
         public void ForceToggleVisibility()
