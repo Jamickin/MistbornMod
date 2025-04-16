@@ -1,3 +1,4 @@
+// Updated description_workshop.txt
 == MISTBORN MOD ==
 
 This mod brings the Allomantic magic system from Brandon Sanderson's Mistborn series to Terraria!
@@ -10,8 +11,9 @@ FEATURES:
 - FLARE your metals for double power (but double consumption)
 - Metal Detection feature to find metals without burning reserves
 - Misting system - start with a random metal ability
-- Improved draggable UI - customize your metal reserve display
-- Distinctive zinc stalagmites rising from the surface
+- Improved draggable UI with invisible backgrounds for a cleaner look
+- Option to hide button hints for even cleaner UI
+- Distinctive zinc stalagmites rising from the surface in grass biomes
 - Complete Mistborn experience with visual and sound effects
 
 METALS & ABILITIES:
@@ -33,20 +35,25 @@ CONTROLS:
 - Press [M] to toggle the Metal Reserves UI display
 
 ENHANCED UI SYSTEM:
-- Fully draggable metal reserves display
+- Fully draggable metal reserves display with invisible backgrounds
 - Right-click bars to unlink individual metals
 - Detailed metal reserves information with burn status
+- Option to hide button hints in mod configuration
+- Clean, minimalist appearance that doesn't obstruct gameplay
 
 ZINC ORE:
 - Find distinctive zinc stalagmites extending up to 25 blocks high from the surface
+- Stalagmites now spawn less frequently and only in grass/forest biomes
 - Highly visible ore formations that are easy to spot while exploring
-- Unique generation makes finding zinc much easier than before
+- Unique generation makes finding zinc more rewarding
 - Compatible with WorldGenPreviewer mod - watch the stalagmites form in real-time!
 - Custom generation system ensures stalagmites aren't overwritten by terrain
 
+BUGS:
+- Moving the bars around and unlinking them does not save the position. Change something in the modconfig and then save config for the positions/linked status to change
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 1.1.0 - Major update with improved draggable UI, distinctive zinc ore generation, enhanced metal detection, and stability improvements. Mistwraith Update coming soon!
+Version 1.1.1 - UI improvements with invisible backgrounds for a cleaner look. Added option to hide button hints. Balanced zinc stalagmite generation to be less frequent and only appear in grass biomes. Mistwraith Update coming soon!
 
 Credits:
 - Mod created by James Wheeler

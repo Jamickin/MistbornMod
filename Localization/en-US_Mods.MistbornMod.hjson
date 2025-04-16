@@ -187,6 +187,8 @@ Keybinds: {
 	"Detect Metals.DisplayName": Detect Nearby Metals (No Consumption)
 }
 
+// Add to the Config section in Localization/en-US_Mods.MistbornMod.hjson
+
 Configs: {
 	MetalUIConfig: {
 		DisplayName: Metal UI Settings
@@ -216,6 +218,11 @@ Configs: {
 			Tooltip: Whether the UI is visible when you start the game
 		}
 
+		HideButtonHints: {
+			Label: Hide Button Hints
+			Tooltip: Hides the button hint text from the UI for a cleaner look
+		}
+
 		UnlinkedMetals: {
 			Label: Unlinked Metals
 			Tooltip: ""
@@ -224,6 +231,16 @@ Configs: {
 		MetalPositions: {
 			Label: Metal Positions
 			Tooltip: ""
+		}
+
+		TotalSectionUnlinked: {
+			Label: Unlink Total Section
+			Tooltip: Whether the total reserves section is unlinked from the main UI
+		}
+
+		TotalSectionPosition: {
+			Label: Total Section Position
+			Tooltip: Position of the unlinked total section
 		}
 	}
 
