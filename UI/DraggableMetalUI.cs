@@ -40,7 +40,7 @@ namespace MistbornMod.UI
         private bool isVisible = true;
         private bool isDragging = false;
         private Vector2 dragOffset;
-        private bool dragEnabled = true;
+        private bool dragEnabled = false;
 
         // Individual metal bar positions for unlinking
         private Dictionary<MetalType, bool> unlinkedBars = new Dictionary<MetalType, bool>();
@@ -186,6 +186,9 @@ namespace MistbornMod.UI
             // Load total section settings
             totalSectionUnlinked = config.TotalSectionUnlinked;
             totalSectionPosition = config.TotalSectionPosition;
+
+            // The visibility toggles are accessed directly from config in the DrawUI method,
+            // so we don't need to store them in local variables
         }
 
         // Call this when the user clicks "Restore Defaults" in the config menu
@@ -229,6 +232,7 @@ namespace MistbornMod.UI
         {
             if (config != null)
             {
+                // Update config with current values
                 config.DefaultPosition = position;
                 config.UnlinkedMetals = unlinkedBars.ToDictionary(
                     x => x.Key.ToString(),
@@ -240,6 +244,9 @@ namespace MistbornMod.UI
                 );
                 config.TotalSectionUnlinked = totalSectionUnlinked;
                 config.TotalSectionPosition = totalSectionPosition;
+
+                // Force save the config to disk
+                ModContent.GetInstance<MistbornMod>()?.SaveConfig(config);
             }
         }
 
@@ -334,7 +341,7 @@ namespace MistbornMod.UI
             }
             else if (Main.mouseLeftRelease)
             {
-                // When drag ends, save the configuration
+                // When drag ends, save the configuration immediately
                 if (isDragging)
                 {
                     SaveUIConfiguration();
@@ -530,46 +537,53 @@ namespace MistbornMod.UI
                 metalsToShow.Add(modPlayer.MistingMetal.Value);
             }
 
-            // Draw header background with very low opacity (almost invisible)
-            Rectangle headerRect = new Rectangle(
-                (int)(position.X - 10 * scale),
-                (int)(position.Y - 10 * scale),
-                (int)(280 * scale),
-                (int)(30 * scale)
-            );
-
-            spriteBatch.Draw(
-                Terraria.GameContent.TextureAssets.MagicPixel.Value,
-                headerRect,
-                new Color(0, 0, 0, 5)
-            ); // Almost completely invisible (alpha = 5)
-
-            // Add header rect to interaction list
-            interactionRects.Add((headerRect, null, true, false));
-
-            // Draw header text
-            Vector2 titlePos = position * scale;
-            Terraria.Utils.DrawBorderStringFourWay(
-                spriteBatch,
-                Terraria.GameContent.FontAssets.MouseText.Value,
-                statusTexts[0].Text,
-                titlePos.X,
-                titlePos.Y,
-                statusTexts[0].Color,
-                Color.Black,
-                Vector2.Zero,
-                scale
-            );
-
-            // Draw each metal bar
-            for (int i = 0; i < metalsToShow.Count; i++)
+            // Draw title only if enabled
+            if (config == null || config.ShowTitle)
             {
-                var metal = metalsToShow[i];
-                DrawMetalBar(spriteBatch, metal, modPlayer, i);
+                // Draw header background with very low opacity (almost invisible)
+                Rectangle headerRect = new Rectangle(
+                    (int)(position.X - 10 * scale),
+                    (int)(position.Y - 10 * scale),
+                    (int)(280 * scale),
+                    (int)(30 * scale)
+                );
+
+                spriteBatch.Draw(
+                    Terraria.GameContent.TextureAssets.MagicPixel.Value,
+                    headerRect,
+                    new Color(0, 0, 0, 5)
+                ); // Almost completely invisible (alpha = 5)
+
+                // Add header rect to interaction list
+                interactionRects.Add((headerRect, null, true, false));
+
+                // Draw header text - Do not multiply position by scale here
+                Vector2 titlePos = new Vector2(position.X, position.Y);
+                Terraria.Utils.DrawBorderStringFourWay(
+                    spriteBatch,
+                    Terraria.GameContent.FontAssets.MouseText.Value,
+                    statusTexts[0].Text,
+                    titlePos.X,
+                    titlePos.Y,
+                    statusTexts[0].Color,
+                    Color.Black,
+                    Vector2.Zero,
+                    scale
+                );
             }
 
-            // Draw total reserves info for Mistborn as a footer
-            if (modPlayer.IsMistborn)
+            // Draw each metal bar if enabled
+            if (config == null || config.ShowMetalBars)
+            {
+                for (int i = 0; i < metalsToShow.Count; i++)
+                {
+                    var metal = metalsToShow[i];
+                    DrawMetalBar(spriteBatch, metal, modPlayer, i);
+                }
+            }
+
+            // Draw total reserves info for Mistborn as a footer if enabled
+            if ((modPlayer.IsMistborn) && (config == null || config.ShowTotalSection))
             {
                 DrawTotalReserves(spriteBatch, modPlayer);
             }
@@ -858,10 +872,15 @@ namespace MistbornMod.UI
     {
         public override ConfigScope Mode => ConfigScope.ClientSide;
 
-        [Header("$Mods.MistbornMod.Config.UISettings")]
-        [DefaultValue(1.0f)]
-        [Range(0.5f, 2.0f)]
-        [Increment(0.1f)]
+        [Header("$Mods.MistbornMod.Config.UIVisibilitySettings")]
+        [DefaultValue(true)]
+        public bool ShowTitle { get; set; } = true;
+
+        [DefaultValue(true)]
+        public bool ShowMetalBars { get; set; } = true;
+
+        [DefaultValue(true)]
+        public bool ShowTotalSection { get; set; } = true;
         public float UIScale { get; set; } = 1.0f;
 
         public Vector2 DefaultPosition { get; set; } = new Vector2(855, 0); // Position specified in mod config
@@ -874,8 +893,6 @@ namespace MistbornMod.UI
 
         // New option to hide button hints
         [DefaultValue(false)]
-        [Label("Hide Button Hints")]
-        [Tooltip("Hides the button hint text from the UI for a cleaner look")]
         public bool HideButtonHints { get; set; } = false;
 
         // Store which metals are unlinked (serialized as string keys for enum compatibility)

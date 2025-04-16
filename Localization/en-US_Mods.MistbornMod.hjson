@@ -189,6 +189,8 @@ Keybinds: {
 
 // Add to the Config section in Localization/en-US_Mods.MistbornMod.hjson
 
+// Add this to Localization/en-US_Mods.MistbornMod.hjson:
+
 Configs: {
 	MetalUIConfig: {
 		DisplayName: Metal UI Settings
@@ -208,11 +210,6 @@ Configs: {
 			Tooltip: Allow dragging the Metal UI with mouse
 		}
 
-		BarStyle: {
-			Label: Bar Style
-			Tooltip: Visual style for metal reserve bars
-		}
-
 		ShowByDefault: {
 			Label: Show UI By Default
 			Tooltip: Whether the UI is visible when you start the game
@@ -221,6 +218,21 @@ Configs: {
 		HideButtonHints: {
 			Label: Hide Button Hints
 			Tooltip: Hides the button hint text from the UI for a cleaner look
+		}
+
+		ShowTitle: {
+			Label: Show Title
+			Tooltip: Show the Mistborn/Misting Reserves title
+		}
+
+		ShowMetalBars: {
+			Label: Show Metal Bars
+			Tooltip: Show individual metal reserve bars
+		}
+
+		ShowTotalSection: {
+			Label: Show Total Section
+			Tooltip: Show the total reserves section
 		}
 
 		UnlinkedMetals: {
@@ -245,13 +257,7 @@ Configs: {
 	}
 
 	UISettings: UI Settings
-
-	BarStyle: {
-		Tooltip: ""
-		Blocks.Label: Blocks
-		Pips.Label: Pips
-		Gradient.Label: Gradient
-	}
+	UIVisibilitySettings: UI Visibility Settings
 }
 
-Config.UISettings: U I Scale Header
+Config.UIVisibilitySettings: Show Title Header
