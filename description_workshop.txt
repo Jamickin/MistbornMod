@@ -53,8 +53,8 @@ BUGS:
 - Moving the bars around and unlinking them does not save the position. Change something in the modconfig and then save config for the positions/linked status to change
 For fans of the Mistborn series and anyone who wants a new magic system with unique mobility and combat options!
 
-Version 1.1.1 - UI improvements with invisible backgrounds for a cleaner look. Added option to hide button hints. Balanced zinc stalagmite generation to be less frequent and only appear in grass biomes. Mistwraith Update coming soon!
+Version 1.1.2 - New Collaborator! Thanks to Omegavic for the awesome Icon! Mistwraith Update coming soon!
 
 Credits:
 - Mod created by James Wheeler
-- Special thanks to Claude AI (by Anthropic) for coding assistance and feature implementation
+- Icon and future updates from Omegavic
