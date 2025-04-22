@@ -4,6 +4,10 @@ using Terraria;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
 
+using MistbornMod.Common.UI;
+using MistbornMod.Content.Items;
+using MistbornMod.Content.Tiles;
+
 namespace MistbornMod
 {
     public class MistbornMod : Mod
@@ -131,7 +135,7 @@ namespace MistbornMod
                             Terraria.WorldGen.PlaceTile(
                                 currentX,
                                 currentY,
-                                ModContent.TileType<Tiles.ZincOreTile>(),
+                                ModContent.TileType<ZincOreTile>(),
                                 true,
                                 true
                             );
@@ -141,7 +145,7 @@ namespace MistbornMod
 
                             // These flags help protect the tile from being overwritten
                             tile.HasTile = true;
-                            tile.TileType = (ushort)ModContent.TileType<Tiles.ZincOreTile>();
+                            tile.TileType = (ushort)ModContent.TileType<ZincOreTile>();
                         }
                     }
                 }
@@ -170,7 +174,7 @@ namespace MistbornMod
                 if (
                     tile.HasTile
                     && Terraria.Main.tileSolid[tile.TileType]
-                    && tile.TileType != ModContent.TileType<Tiles.ZincOreTile>()
+                    && tile.TileType != ModContent.TileType<ZincOreTile>()
                 )
                 {
                     // Create small ore cluster
@@ -179,7 +183,7 @@ namespace MistbornMod
                         scatterY,
                         Terraria.WorldGen.genRand.Next(2, 5), // Small size
                         Terraria.WorldGen.genRand.Next(2, 6), // Small steps
-                        ModContent.TileType<Tiles.ZincOreTile>(),
+                        ModContent.TileType<ZincOreTile>(),
                         false,
                         0f,
                         0f,
@@ -217,7 +221,7 @@ namespace MistbornMod
             BronzeToggleHotkey = KeybindLoader.RegisterKeybind(this, "Burn Bronze", "N");
             // Add the flare toggle keybind
             FlareToggleHotkey = KeybindLoader.RegisterKeybind(this, "Flare Metals", "LeftAlt");
-            UI.DraggableMetalUI.ToggleUIHotkey = KeybindLoader.RegisterKeybind(
+            DraggableMetalUI.ToggleUIHotkey = KeybindLoader.RegisterKeybind(
                 this,
                 "Toggle Metal UI",
                 "M"
