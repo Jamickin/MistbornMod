@@ -3,6 +3,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Microsoft.Xna.Framework;
 using MistbornMod.Content.Tiles;
+using MistbornMod.Content.NPCs;
 
 namespace MistbornMod.Common.Systems
 {
@@ -18,6 +19,10 @@ namespace MistbornMod.Common.Systems
         /// <returns>True if metallic</returns>
         public static bool IsMetallicNPC(NPC npc)
         {
+            // NEW: Check for Steel Anchor Points
+            if (npc.ModNPC is SteelAnchorPoint)
+                return true;
+            
             bool wearsArmor = npc.defense > 10;
             bool isSpecificType = npc.type == NPCID.Probe || 
                                   npc.type == NPCID.ArmoredSkeleton || 

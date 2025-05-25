@@ -31,19 +31,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jamic\\.nuget\\packages\\": {}
+    "/home/jamickin/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jamic\\OneDrive\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\MistbornMod\\MistbornMod.csproj",
+      "projectUniqueName": "/home/jamickin/.local/share/Terraria/tModLoader/ModSources/MistbornMod/MistbornMod.csproj",
       "projectName": "MistbornMod",
-      "projectPath": "C:\\Users\\jamic\\OneDrive\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\MistbornMod\\MistbornMod.csproj",
-      "packagesPath": "C:\\Users\\jamic\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jamic\\OneDrive\\Documents\\My Games\\Terraria\\tModLoader\\ModSources\\MistbornMod\\obj\\",
+      "projectPath": "/home/jamickin/.local/share/Terraria/tModLoader/ModSources/MistbornMod/MistbornMod.csproj",
+      "packagesPath": "/home/jamickin/.nuget/packages/",
+      "outputPath": "/home/jamickin/.local/share/Terraria/tModLoader/ModSources/MistbornMod/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\jamic\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/home/jamickin/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -61,11 +61,6 @@
         "warnAsError": [
           "NU1605"
         ]
-      },
-      "restoreAuditProperties": {
-        "enableAudit": "true",
-        "auditLevel": "low",
-        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -93,7 +88,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.407/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.116/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

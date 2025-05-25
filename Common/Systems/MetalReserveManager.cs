@@ -96,52 +96,12 @@ namespace MistbornMod.Common.Systems
         /// <returns>True if successful, false if at max</returns>
         public bool AddReserves(MetalType metal, int durationValue)
         {
-            // Check if player can metabolize this metal (either Mistborn or correct Misting type)
-            bool canMetabolizeThisMetal =
-                _modPlayer.IsMistborn
-                || 
-                    _modPlayer.IsMisting
-                    && _modPlayer.MistingMetal.HasValue
-                    && _modPlayer.MistingMetal.Value == metal
-                ;
+            // NEW: Updated check to include Hemalurgic powers
+            bool canMetabolizeThisMetal = CanPlayerMetabolizeMetal(metal);
 
             if (!canMetabolizeThisMetal)
             {
-                if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue)
-                {
-                    // Player is a Misting but tried to drink the wrong metal
-                    Main.NewText(
-                        $"As a {_modPlayer.GetMistingName(_modPlayer.MistingMetal.Value)}, you can only metabolize {_modPlayer.MistingMetal.Value}.",
-                        255,
-                        100,
-                        100
-                    );
-                }
-                else
-                {
-                    // Player has no Allomantic abilities
-                    Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
-                }
-                SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
-
-                // If this is their Misting metal, mark as discovered
-                if (
-                    _modPlayer.IsMisting
-                    && _modPlayer.MistingMetal.HasValue
-                    && _modPlayer.MistingMetal.Value == metal
-                    && !_modPlayer.HasDiscoveredMistingAbility
-                )
-                {
-                    _modPlayer.HasDiscoveredMistingAbility = true;
-                    string mistingName = _modPlayer.GetMistingName(metal);
-                    Main.NewText(
-                        $"You have discovered your ability as a {mistingName}!",
-                        255,
-                        220,
-                        100
-                    );
-                }
-
+                ShowCannotMetabolizeMessage(metal);
                 return false;
             }
 
@@ -192,6 +152,64 @@ namespace MistbornMod.Common.Systems
                 Main.NewText($"{metal} reserves: {totalSeconds} seconds", 200, 255, 200);
             }
 
+            // Handle discovery for Mistings
+            HandleMistingDiscovery(metal);
+
+            return true;
+        }
+
+        /// <summary>
+        /// NEW: Check if the player can metabolize a specific metal
+        /// </summary>
+        private bool CanPlayerMetabolizeMetal(MetalType metal)
+        {
+            // Mistborn can metabolize all metals
+            if (_modPlayer.IsMistborn) return true;
+            
+            // Misting can metabolize their specific metal
+            if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue && _modPlayer.MistingMetal.Value == metal)
+                return true;
+            
+            // NEW: Check if they have this power through Hemalurgy
+            if (_modPlayer.HemalurgicPowers.Contains(metal)) return true;
+            
+            return false;
+        }
+
+        /// <summary>
+        /// NEW: Show appropriate message when player cannot metabolize a metal
+        /// </summary>
+        private void ShowCannotMetabolizeMessage(MetalType metal)
+        {
+            if (_modPlayer.IsMisting && _modPlayer.MistingMetal.HasValue)
+            {
+                // Player is a Misting but tried to drink the wrong metal
+                Main.NewText(
+                    $"As a {_modPlayer.GetMistingName(_modPlayer.MistingMetal.Value)}, you can only metabolize {_modPlayer.MistingMetal.Value}.",
+                    255,
+                    100,
+                    100
+                );
+            }
+            else if (_modPlayer.HemalurgicPowers.Count > 0)
+            {
+                // Player has some Hemalurgic powers but not this one
+                string availablePowers = string.Join(", ", _modPlayer.HemalurgicPowers);
+                Main.NewText($"Your Hemalurgic spikes only allow you to metabolize: {availablePowers}.", 255, 100, 100);
+            }
+            else
+            {
+                // Player has no Allomantic abilities
+                Main.NewText("You don't have the ability to metabolize metals.", 255, 100, 100);
+            }
+            SoundEngine.PlaySound(SoundID.MenuTick, _player.position);
+        }
+
+        /// <summary>
+        /// NEW: Handle Misting ability discovery
+        /// </summary>
+        private void HandleMistingDiscovery(MetalType metal)
+        {
             // If this is their first time using their Misting metal, mark as discovered
             if (
                 _modPlayer.IsMisting
@@ -209,8 +227,6 @@ namespace MistbornMod.Common.Systems
                     100
                 );
             }
-
-            return true;
         }
 
         /// <summary>

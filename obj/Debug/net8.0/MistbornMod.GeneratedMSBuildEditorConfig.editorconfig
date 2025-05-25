@@ -8,6 +8,6 @@ build_property.PlatformNeutralAssembly =
 build_property.EnforceExtendedAnalyzerRules = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = MistbornMod
-build_property.ProjectDir = C:\Users\jamic\OneDrive\Documents\My Games\Terraria\tModLoader\ModSources\MistbornMod\
+build_property.ProjectDir = /home/jamickin/.local/share/Terraria/tModLoader/ModSources/MistbornMod/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 

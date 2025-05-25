@@ -7,6 +7,7 @@ using Terraria.ModLoader.Config;
 using MistbornMod.Common.UI;
 using MistbornMod.Content.Items;
 using MistbornMod.Content.Tiles;
+using MistbornMod.Common.Systems;
 
 namespace MistbornMod
 {
@@ -194,16 +195,6 @@ namespace MistbornMod
             }
         }
 
-        // public void SaveConfig(ModConfig config)
-        // {
-        //     // This is the correct way to save a ModConfig in tModLoader
-        //     if (config != null)
-        //     {
-        //         // Force a config save
-        //         Configuration.Save(config);
-        //     }
-        // }
-
         public override void Load()
         {
             // Register the hotkeys when the mod loads
@@ -229,6 +220,16 @@ namespace MistbornMod
 
             // Add the new metal detection hotkey (using LeftShift as default)
             MetalDetectionHotkey = KeybindLoader.RegisterKeybind(this, "Detect Metals", "X");
+        }
+
+        public override void PostSetupContent()
+        {
+            // NEW: Register the Hemalurgic Implant accessory slot
+            // This creates a dedicated slot for Hemalurgic spikes
+            AccessorySlotLoader.RegisterAccessorySlot(
+                this,
+                new HemalurgicImplantSlot()
+            );
         }
 
         // It's good practice to unload static variables
