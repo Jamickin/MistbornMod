@@ -135,6 +135,152 @@ Items: {
 			Use this to discover what metal you can burn
 			'''
 	}
+
+	// NEW: Hemalurgic Spikes
+	BoneIronSpike: {
+		DisplayName: Bone Iron Spike
+		Tooltip:
+			'''
+			A crude spike forged from bone and iron
+			Kill 25 enemies to steal Iron Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	BoneSteelSpike: {
+		DisplayName: Bone Steel Spike
+		Tooltip:
+			'''
+			A crude spike forged from bone and steel
+			Kill 25 enemies to steal Steel Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	ShadowPewterSpike: {
+		DisplayName: Shadow Pewter Spike
+		Tooltip:
+			'''
+			A dark spike infused with shadow essence
+			Kill 50 enemies to steal Pewter Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	ShadowTinSpike: {
+		DisplayName: Shadow Tin Spike
+		Tooltip:
+			'''
+			A dark spike infused with shadow essence
+			Kill 50 enemies to steal Tin Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	BloodZincSpike: {
+		DisplayName: Blood Zinc Spike
+		Tooltip:
+			'''
+			A spike forged with blood and suffering
+			Kill 75 enemies to steal Zinc Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	BloodBrassSpike: {
+		DisplayName: Blood Brass Spike
+		Tooltip:
+			'''
+			A spike forged with blood and suffering
+			Kill 75 enemies to steal Brass Allomancy
+			[c/FF4444:Hemalurgy corrupts the soul]
+			'''
+	}
+
+	AtiumAtiumSpike: {
+		DisplayName: Atium Atium Spike
+		Tooltip:
+			'''
+			The ultimate Hemalurgic spike
+			Kill 100 enemies to steal Atium Allomancy
+			[c/FF4444:The most dangerous form of Hemalurgy]
+			'''
+	}
+
+	// NEW: Steel Anchor System
+	SteelAnchorAmmo: {
+		DisplayName: Steel Anchor Rounds
+		Tooltip:
+			'''
+			Special ammunition that creates temporary anchor points
+			Push against these anchors for enhanced mobility
+			[c/00FF00:Works with Steel Allomancy]
+			'''
+	}
+
+	// NEW: Combination Vials
+	PhysicalElixir: {
+		DisplayName: Physical Enhancement Elixir
+		Tooltip:
+			'''
+			A combination of Pewter and Tin
+			Grants both strength and enhanced senses
+			[c/00FF00:More efficient than separate vials]
+			'''
+	}
+
+	EmotionalMastery: {
+		DisplayName: Emotional Control Mixture
+		Tooltip:
+			'''
+			A combination of Brass and Zinc
+			Allows both soothing and rioting
+			[c/00FF00:More efficient than separate vials]
+			'''
+	}
+
+	MetallicMastery: {
+		DisplayName: Metallic Control Draught
+		Tooltip:
+			'''
+			A combination of Iron and Steel
+			Grants both pushing and pulling abilities
+			[c/00FF00:More efficient than separate vials]
+			'''
+	}
+
+	DetectionBundle: {
+		DisplayName: Detection Mastery Bundle
+		Tooltip:
+			'''
+			A combination of Copper and Bronze
+			Hide your Allomancy while detecting others
+			[c/00FF00:More efficient than separate vials]
+			'''
+	}
+
+	AllomanticSupremacy: {
+		DisplayName: Allomantic Supremacy
+		Tooltip:
+			'''
+			The ultimate combination of all basic metals
+			Contains Iron, Steel, Tin, Pewter, Zinc, Brass, Copper, and Bronze
+			[c/FFD700:The pinnacle of Allomantic preparation]
+			[c/00FF00:More efficient than separate vials]
+			'''
+	}
+}
+
+Projectiles: {
+	SteelAnchorBullet: {
+		DisplayName: Steel Anchor
+	}
+}
+
+NPCs: {
+	SteelAnchorPoint: {
+		DisplayName: Steel Anchor Point
+	}
 }
 
 UI: {
@@ -142,6 +288,11 @@ UI: {
 		Title: Metal Reserves
 		TotalCapacity: Total Capacity
 		VialsUsed: Vials Used: {0}/6
+	}
+
+	HemalurgicSlot: {
+		DisplayName: Hemalurgic Implant
+		Tooltip: Equip Hemalurgic Spikes here to steal Allomantic powers through violence
 	}
 }
 
@@ -169,6 +320,26 @@ Dialogs: {
 	}
 
 	MetalDetection.NoReserves: You need Iron or Steel reserves to detect metals!
+
+	Hemalurgy: {
+		SpikeProgress: Spike Progress: {0}/{1} kills
+		PowerUnlocked: "[c/00FF00:Power Unlocked!] Grants {0} Allomancy"
+		SpikeEquipped: The {0} spike pierces your soul...
+		KillsNeeded: Kill {0} more enemies to unlock its power.
+		PowerActive: The power of {0} flows through you!
+		PowerFades: The {0} power fades as the spike is removed...
+		SoulCorruption: "[c/FF4444:Hemalurgy corrupts the soul with each kill]"
+	}
+
+	SteelAnchor: {
+		Created: Steel anchor point created!
+		Expires: Steel anchor fading...
+	}
+
+	CombinationVial: {
+		Absorbed: "Absorbed {0}: {1}"
+		MoreEfficient: "[c/00FF00:More efficient than drinking separate vials]"
+	}
 }
 
 Keybinds: {
@@ -188,8 +359,6 @@ Keybinds: {
 }
 
 // Add to the Config section in Localization/en-US_Mods.MistbornMod.hjson
-
-// Add this to Localization/en-US_Mods.MistbornMod.hjson:
 
 Configs: {
 	MetalUIConfig: {

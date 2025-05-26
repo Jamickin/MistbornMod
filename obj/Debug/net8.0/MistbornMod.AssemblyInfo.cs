@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MistbornMod")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e8048367a185606f44eddd3ee47fc9e017799ddb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+00fe977c549c0cd6e8185cc0a56e339e1f9866ec")]
 [assembly: System.Reflection.AssemblyProductAttribute("MistbornMod")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MistbornMod")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
