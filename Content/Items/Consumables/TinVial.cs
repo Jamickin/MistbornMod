@@ -1,13 +1,13 @@
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
-    public class BrassVial : MetalVial
+    public class TinVial : MetalVial
     {
         
 
         public override void SetDefaults()
         {
             base.SetDefaults();
-            Metal = MetalType.Brass;
+            Metal = MetalType.Tin;
         }
     }
 }

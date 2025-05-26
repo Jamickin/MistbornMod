@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using MistbornMod.Common.UI;
 using MistbornMod.Common.Players;
-using MistbornMod.Content.Items;
+using MistbornMod.Content.Items.Consumables;
 
 namespace MistbornMod
 {

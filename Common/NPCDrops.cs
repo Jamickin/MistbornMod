@@ -2,7 +2,7 @@ using Terraria;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using MistbornMod.Content.Items;
+using MistbornMod.Content.Items.Consumables;
 
 namespace MistbornMod
 {

@@ -3,8 +3,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Localization;
-
-using MistbornMod.Content.Items;
+using MistbornMod.Content.Items.Placeables;
 namespace MistbornMod.Content.Tiles
 {
     public class ZincOreTile : ModTile

@@ -1,4 +1,4 @@
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
     public class SteelVial : MetalVial
     {

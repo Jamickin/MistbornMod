@@ -2,6 +2,8 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using MistbornMod.Content.Items;
+using MistbornMod.Content.Items.Consumables;
+using MistbornMod.Content.Items.Placeables;
 
 namespace MistbornMod.Recipes
 {

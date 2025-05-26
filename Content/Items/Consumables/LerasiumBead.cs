@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using MistbornMod.Common.Systems;
 using MistbornMod.Common.Players;
 
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
     public class LerasiumBead : ModItem
     {
