@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using Terraria.Localization;
 using System;
 using MistbornMod.Common.Players;
-using MistbornMod.Content.Items;
+using MistbornMod.Content.Items.Consumables;
 
 namespace MistbornMod.Common.Systems
 {

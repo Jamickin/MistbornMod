@@ -3,7 +3,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
     // Base class for metal vials
     public abstract class MetalVial : ModItem

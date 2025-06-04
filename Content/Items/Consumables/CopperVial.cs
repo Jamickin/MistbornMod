@@ -1,5 +1,5 @@
 // Items/CopperVial.cs
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
     public class CopperVial : MetalVial
     {

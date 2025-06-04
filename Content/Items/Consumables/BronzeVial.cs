@@ -1,5 +1,5 @@
 // Items/BronzeVial.cs
-namespace MistbornMod.Content.Items
+namespace MistbornMod.Content.Items.Consumables
 {
     public class BronzeVial : MetalVial
     {
