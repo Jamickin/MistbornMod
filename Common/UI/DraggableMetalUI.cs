@@ -870,63 +870,70 @@ namespace MistbornMod.Common.UI
     // Updated MetalUIConfig class inside DraggableMetalUI.cs
 
     // Updated MetalUIConfig class inside DraggableMetalUI.cs
-    public class MetalUIConfig : ModConfig
+    // Updated MetalUIConfig class inside DraggableMetalUI.cs
+public class MetalUIConfig : ModConfig
+{
+    public override ConfigScope Mode => ConfigScope.ClientSide;
+
+    [Header("$Mods.MistbornMod.Config.UIVisibilitySettings")]
+    [DefaultValue(true)]
+    public bool ShowTitle { get; set; } = true;
+
+    [DefaultValue(true)]
+    public bool ShowMetalBars { get; set; } = true;
+
+    [DefaultValue(true)]
+    public bool ShowTotalSection { get; set; } = true;
+    
+    [DefaultValue(1.0f)]
+    [Range(0.5f, 2.0f)]
+    public float UIScale { get; set; } = 1.0f;
+
+    public Vector2 DefaultPosition { get; set; } = new Vector2(855, 0);
+
+    [DefaultValue(true)]
+    public bool AllowDragging { get; set; } = true;
+
+    [DefaultValue(true)]
+    public bool ShowByDefault { get; set; } = true;
+
+    [DefaultValue(false)]
+    public bool HideButtonHints { get; set; } = false;
+
+    [Header("$Mods.MistbornMod.Config.VisualEffectsSettings")]
+    [DefaultValue(true)]
+    public bool EnableMistEffects { get; set; } = true;
+
+    [DefaultValue(1.0f)]
+    [Range(0.1f, 3.0f)]
+    public float MistIntensity { get; set; } = 1.0f;
+
+    [DefaultValue(1.0f)]
+    [Range(0.1f, 5.0f)]
+    public float MistParticleFrequency { get; set; } = 1.0f;
+
+    // Store which metals are unlinked (serialized as string keys for enum compatibility)
+    [JsonProperty]
+    public Dictionary<string, bool> UnlinkedMetals { get; set; } = new Dictionary<string, bool>();
+
+    // Store positions of individual metals
+    [JsonProperty]
+    public Dictionary<string, Vector2> MetalPositions { get; set; } = new Dictionary<string, Vector2>();
+
+    // Add properties for total section
+    [JsonProperty]
+    public bool TotalSectionUnlinked { get; set; } = false;
+
+    [JsonProperty]
+    public Vector2 TotalSectionPosition { get; set; } = Vector2.Zero;
+
+    public override void OnChanged()
     {
-        public override ConfigScope Mode => ConfigScope.ClientSide;
-
-        [Header("$Mods.MistbornMod.Config.UIVisibilitySettings")]
-        [DefaultValue(true)]
-        public bool ShowTitle { get; set; } = true;
-
-        [DefaultValue(true)]
-        public bool ShowMetalBars { get; set; } = true;
-
-        [DefaultValue(true)]
-        public bool ShowTotalSection { get; set; } = true;
-        
-        public float UIScale { get; set; } = 1.0f;
-
-        public Vector2 DefaultPosition { get; set; } = new Vector2(855, 0); // Position specified in mod config
-
-        [DefaultValue(true)]
-        public bool AllowDragging { get; set; } = true;
-
-        [DefaultValue(true)]
-        public bool ShowByDefault { get; set; } = true;
-
-        // New option to hide button hints
-        [DefaultValue(false)]
-        public bool HideButtonHints { get; set; } = false;
-
-        [Header("$Mods.MistbornMod.Config.VisualEffectsSettings")]
-        // NEW: Toggle for mist effects
-        [DefaultValue(true)]
-        public bool EnableMistEffects { get; set; } = true;
-
-        // Store which metals are unlinked (serialized as string keys for enum compatibility)
-        [JsonProperty]
-        public Dictionary<string, bool> UnlinkedMetals { get; set; } =
-            new Dictionary<string, bool>();
-
-        // Store positions of individual metals
-        [JsonProperty]
-        public Dictionary<string, Vector2> MetalPositions { get; set; } =
-            new Dictionary<string, Vector2>();
-
-        // Add properties for total section
-        [JsonProperty]
-        public bool TotalSectionUnlinked { get; set; } = false;
-
-        [JsonProperty]
-        public Vector2 TotalSectionPosition { get; set; } = Vector2.Zero;
-
-        public override void OnChanged()
+        // Apply settings immediately when changed
+        if (DraggableMetalUI.Instance != null)
         {
-            // Apply settings immediately when changed
-            if (DraggableMetalUI.Instance != null)
-            {
-                DraggableMetalUI.Instance.ApplyConfig();
-            }
+            DraggableMetalUI.Instance.ApplyConfig();
         }
     }
+}
 }

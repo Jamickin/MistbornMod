@@ -271,17 +271,8 @@ Items: {
 	}
 }
 
-Projectiles: {
-	SteelAnchorBullet: {
-		DisplayName: Steel Anchor
-	}
-}
-
-NPCs: {
-	SteelAnchorPoint: {
-		DisplayName: Steel Anchor Point
-	}
-}
+Projectiles.SteelAnchorBullet.DisplayName: Steel Anchor
+NPCs.SteelAnchorPoint.DisplayName: Steel Anchor Point
 
 UI: {
 	MetalReserves: {
@@ -337,7 +328,7 @@ Dialogs: {
 	}
 
 	CombinationVial: {
-		Absorbed: "Absorbed {0}: {1}"
+		Absorbed: Absorbed {0}: {1}
 		MoreEfficient: "[c/00FF00:More efficient than drinking separate vials]"
 	}
 }
@@ -363,6 +354,11 @@ Keybinds: {
 Configs: {
 	MetalUIConfig: {
 		DisplayName: Metal UI Settings
+
+		Headers: {
+			UIVisibilitySettings: UI Visibility Settings
+			VisualEffectsSettings: Visual Effects Settings
+		}
 
 		UIScale: {
 			Label: UI Scale
@@ -404,6 +400,35 @@ Configs: {
 			Tooltip: Show the total reserves section
 		}
 
+		EnableMistEffects: {
+			Label: Enable Mist Effects
+			Tooltip:
+				'''
+				Enable atmospheric mist effects during night time for Mistborn players
+				Disable this if you want better performance or don't like the visual effect
+				'''
+		}
+
+		MistIntensity: {
+			Label: Mist Intensity
+			Tooltip:
+				'''
+				Controls how intense the mist effects appear
+				Higher values = more visible mist, Lower values = subtle mist
+				Only applies when mist effects are enabled
+				'''
+		}
+
+		MistParticleFrequency: {
+			Label: Mist Particle Frequency
+			Tooltip:
+				'''
+				Controls how often mist particles spawn
+				Higher values = more particles, Lower values = fewer particles
+				Affects performance - lower values improve FPS
+				'''
+		}
+
 		UnlinkedMetals: {
 			Label: Unlinked Metals
 			Tooltip: ""
@@ -424,41 +449,41 @@ Configs: {
 			Tooltip: Position of the unlinked total section
 		}
 	}
-
-	UISettings: UI Settings
-	UIVisibilitySettings: UI Visibility Settings
 }
 
-Config.UIVisibilitySettings: Show Title Header
+Config: {
+	UIVisibilitySettings: Show Title Header
+	VisualEffectsSettings: Enable Mist Effects Header
+}
 
 // Add these entries to your Configs section in Localization/en-US_Mods.MistbornMod.hjson
 
-		// NEW: Enhanced Mist Effects Settings
-		EnableMistEffects: {
-			Label: Enable Mist Effects
-			Tooltip: 
-				'''
-				Enable atmospheric mist effects during night time for Mistborn players
-				Disable this if you want better performance or don't like the visual effect
-				'''
-		}
+// NEW: Enhanced Mist Effects Settings
+EnableMistEffects: {
+	Label: Enable Mist Effects
+	Tooltip:
+		'''
+		Enable atmospheric mist effects during night time for Mistborn players
+		Disable this if you want better performance or don't like the visual effect
+		'''
+}
 
-		MistIntensity: {
-			Label: Mist Intensity
-			Tooltip: 
-				'''
-				Controls how intense the mist effects appear
-				Higher values = more visible mist, Lower values = subtle mist
-				Only applies when mist effects are enabled
-				'''
-		}
+MistIntensity: {
+	Label: Mist Intensity
+	Tooltip:
+		'''
+		Controls how intense the mist effects appear
+		Higher values = more visible mist, Lower values = subtle mist
+		Only applies when mist effects are enabled
+		'''
+}
 
-		MistParticleFrequency: {
-			Label: Mist Particle Frequency
-			Tooltip: 
-				'''
-				Controls how often mist particles spawn
-				Higher values = more particles, Lower values = fewer particles
-				Affects performance - lower values improve FPS
-				'''
-		}
+MistParticleFrequency: {
+	Label: Mist Particle Frequency
+	Tooltip:
+		'''
+		Controls how often mist particles spawn
+		Higher values = more particles, Lower values = fewer particles
+		Affects performance - lower values improve FPS
+		'''
+}

@@ -4,6 +4,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.DataStructures;
+using MistbornMod.Content.NPCs; // ADD THIS LINE
 
 namespace MistbornMod.Content.Projectiles
 {
@@ -60,7 +61,7 @@ namespace MistbornMod.Content.Projectiles
             // Create the anchor point NPC at impact location
             var source = Projectile.GetSource_FromThis();
             int anchorIndex = NPC.NewNPC(source, (int)Projectile.Center.X, (int)Projectile.Center.Y, 
-                ModContent.NPCType<SteelAnchorPoint>());
+                ModContent.NPCType<SteelAnchorPoint>()); // Now this will work
 
             if (anchorIndex < Main.maxNPCs)
             {

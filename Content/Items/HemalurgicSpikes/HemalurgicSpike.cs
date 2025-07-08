@@ -1,3 +1,4 @@
+// Update your HemalurgicSpike.cs to work with regular accessory slots
 using MistbornMod.Common.Players;
 using System.Collections.Generic;
 using Terraria;
@@ -36,7 +37,7 @@ namespace MistbornMod.Content.Items.HemalurgicSpikes
             Item.maxStack = 1;
             Item.rare = GetRarityForTier();
             Item.value = GetValueForTier();
-            Item.accessory = true;
+            Item.accessory = true; // This makes it equippable in regular accessory slots
             
             // Set required kills based on tier
             RequiredKills = SpikeTier switch
@@ -139,7 +140,7 @@ namespace MistbornMod.Content.Items.HemalurgicSpikes
             {
                 GrantAllomanticPower(modPlayer);
                 
-                // Visual effect when first equipped (only show once per equip)
+                // Visual effect when equipped (only show occasionally)
                 if (!hideVisual && Main.rand.NextBool(300)) // Rare visual effect
                 {
                     Dust.NewDust(
@@ -155,29 +156,12 @@ namespace MistbornMod.Content.Items.HemalurgicSpikes
                     );
                 }
             }
-        }
-
-        // Override this method to handle equip notifications
-        public override void UpdateEquip(Player player)
-        {
-            // This is called when the item is first equipped
-            var modPlayer = player.GetModPlayer<MistbornPlayer>();
-            
-            // Notification about the dangerous nature of Hemalurgy
-            if (!PowerUnlocked)
-            {
-                // Only show message occasionally to avoid spam
-                if (Main.rand.NextBool(3600)) // Once per minute on average
-                {
-                    Main.NewText($"The {TargetMetal} spike hungers for {RequiredKills - CurrentKills} more souls...", 255, 100, 100);
-                }
-            }
             else
             {
-                // Power is active - show subtle reminder
-                if (Main.rand.NextBool(7200)) // Once per two minutes on average
+                // Show subtle reminder that spike needs more kills
+                if (Main.rand.NextBool(1800)) // Once per 30 seconds on average
                 {
-                    Main.NewText($"The stolen power of {TargetMetal} flows through you...", 150, 255, 150);
+                    Main.NewText($"The {TargetMetal} spike hungers for {RequiredKills - CurrentKills} more souls...", 255, 100, 100);
                 }
             }
         }
@@ -187,16 +171,9 @@ namespace MistbornMod.Content.Items.HemalurgicSpikes
             // If player is already Mistborn, they already have all powers
             if (modPlayer.IsMistborn) return;
             
-            // If player is a Misting but for a different metal, upgrade them
-            if (modPlayer.IsMisting && modPlayer.MistingMetal.HasValue && 
-                modPlayer.MistingMetal.Value != TargetMetal)
+            // Grant this power via Hemalurgy
+            if (!modPlayer.HemalurgicPowers.Contains(TargetMetal))
             {
-                // Grant this additional power via Hemalurgy
-                modPlayer.HemalurgicPowers.Add(TargetMetal);
-            }
-            else if (!modPlayer.IsMisting)
-            {
-                // Grant them their first Allomantic power
                 modPlayer.HemalurgicPowers.Add(TargetMetal);
             }
         }

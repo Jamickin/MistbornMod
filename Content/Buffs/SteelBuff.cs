@@ -25,6 +25,10 @@ namespace MistbornMod.Content.Buffs
         // Dictionary to track item damage cooldowns
         private Dictionary<int, int> itemDamageCooldowns = new Dictionary<int, int>();
         
+        // NEW: Dictionary to track NPCs that have had coins pushed from them to prevent spam
+        private Dictionary<int, int> npcCoinCooldowns = new Dictionary<int, int>();
+        private const int CoinPushCooldown = 180; // 3 seconds cooldown per NPC
+        
         public override void SetStaticDefaults()
         {
             base.SetStaticDefaults();
@@ -110,6 +114,78 @@ namespace MistbornMod.Content.Buffs
             }
         }
         
+        // NEW: Handle pushing coins off NPCs when they're pushed
+        private void PushCoinsOffNPC(NPC npc, Vector2 pushDirection, bool isFlaring)
+        {
+            // Check cooldown to prevent spam
+            if (npcCoinCooldowns.ContainsKey(npc.whoAmI))
+            {
+                return;
+            }
+            
+            // Only push coins off NPCs that would normally drop them
+            if (npc.value <= 0) return;
+            
+            // Calculate how many coins to push off (fraction of their total value)
+            float coinPushPercent = isFlaring ? 0.15f : 0.08f; // 8-15% of their coin value
+            int coinValue = (int)(npc.value * coinPushPercent);
+            
+            if (coinValue <= 0) return;
+            
+            // Convert to actual coin items and drop them
+            int copper = coinValue % 100;
+            coinValue /= 100;
+            int silver = coinValue % 100;
+            coinValue /= 100;
+            int gold = coinValue % 100;
+            int platinum = coinValue / 100;
+            
+            Vector2 npcCenter = npc.Center;
+            
+            // Drop coins with push velocity
+            var source = npc.GetSource_Loot();
+            
+            if (platinum > 0)
+            {
+                DropCoinsWithVelocity(source, npcCenter, ItemID.PlatinumCoin, platinum, pushDirection, isFlaring);
+            }
+            if (gold > 0)
+            {
+                DropCoinsWithVelocity(source, npcCenter, ItemID.GoldCoin, gold, pushDirection, isFlaring);
+            }
+            if (silver > 0)
+            {
+                DropCoinsWithVelocity(source, npcCenter, ItemID.SilverCoin, silver, pushDirection, isFlaring);
+            }
+            if (copper > 0)
+            {
+                DropCoinsWithVelocity(source, npcCenter, ItemID.CopperCoin, copper, pushDirection, isFlaring);
+            }
+            
+            // Set cooldown for this NPC
+            npcCoinCooldowns[npc.whoAmI] = CoinPushCooldown;
+            
+            // Visual effect
+            for (int i = 0; i < 5; i++)
+            {
+                Dust.NewDust(npcCenter, 16, 16, DustID.GoldCoin, 
+                    pushDirection.X * 2f, pushDirection.Y * 2f, 100, default, 1.2f);
+            }
+        }
+        
+        // Helper method to drop coins with velocity
+        private void DropCoinsWithVelocity(Terraria.DataStructures.IEntitySource source, Vector2 position, int coinType, int amount, Vector2 direction, bool isFlaring)
+        {
+            Vector2 velocity = direction * (isFlaring ? 8f : 5f) + Main.rand.NextVector2Circular(2f, 2f);
+            
+            int item = Item.NewItem(source, position, coinType, amount);
+            if (item < Main.maxItems)
+            {
+                Main.item[item].velocity = velocity;
+                Main.item[item].noGrabDelay = 60; // Prevent immediate pickup
+            }
+        }
+        
         public override void Update(Player player, ref int buffIndex)
         {
             // Get the MistbornPlayer instance to check flaring status
@@ -143,6 +219,26 @@ namespace MistbornMod.Content.Buffs
             foreach (int key in keysToRemove)
             {
                 itemDamageCooldowns.Remove(key);
+            }
+            
+            // NEW: Update NPC coin cooldowns
+            List<int> npcKeysToRemove = new List<int>();
+            foreach (var kvp in npcCoinCooldowns)
+            {
+                int cooldown = kvp.Value - 1;
+                if (cooldown <= 0)
+                {
+                    npcKeysToRemove.Add(kvp.Key);
+                }
+                else
+                {
+                    npcCoinCooldowns[kvp.Key] = cooldown;
+                }
+            }
+            
+            foreach (int key in npcKeysToRemove)
+            {
+                npcCoinCooldowns.Remove(key);
             }
             
             // Find closest metal to mouse cursor
@@ -245,6 +341,9 @@ namespace MistbornMod.Content.Buffs
                              }
                         } else if (closestTargetEntity is NPC targetNPC) {
                              targetNPC.velocity += pushDirection * currentPushForce * (1f - targetNPC.knockBackResist) * 1.2f;
+                             
+                             // NEW: Push coins off the NPC when they're pushed
+                             PushCoinsOffNPC(targetNPC, pushDirection, modPlayer.IsFlaring);
                         }
                     }
                 }

@@ -222,15 +222,8 @@ namespace MistbornMod
             MetalDetectionHotkey = KeybindLoader.RegisterKeybind(this, "Detect Metals", "X");
         }
 
-        public override void PostSetupContent()
-        {
-            // NEW: Register the Hemalurgic Implant accessory slot
-            // This creates a dedicated slot for Hemalurgic spikes
-            AccessorySlotLoader.RegisterAccessorySlot(
-                this,
-                new HemalurgicImplantSlot()
-            );
-        }
+        // REMOVED: PostSetupContent method that was causing the error
+        // The HemalurgicImplantSlot functionality will be implemented differently
 
         // It's good practice to unload static variables
         public override void Unload()
