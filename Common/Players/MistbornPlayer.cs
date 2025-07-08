@@ -22,11 +22,13 @@ namespace MistbornMod.Common.Players
         // Metal reserves manager
         public MetalReserveManager _reserveManager;
         
+        private HemalurgicSpike _previousSpike = null;
+        
         // Property for accessing metal reserves (for backwards compatibility)
-        public Dictionary<MetalType, int> MetalReserves => _reserveManager != null ? 
+        public Dictionary<MetalType, int> MetalReserves => _reserveManager != null ?
             Enum.GetValues(typeof(MetalType))
                 .Cast<MetalType>()
-                .ToDictionary(m => m, m => _reserveManager.GetReserves(m)) 
+                .ToDictionary(m => m, m => _reserveManager.GetReserves(m))
             : new Dictionary<MetalType, int>();
         
         // Hold-type mechanic flags
@@ -488,7 +490,7 @@ namespace MistbornMod.Common.Players
                 Player.ClearBuff(buffId);
             }
         }
-        
+
         public override void PostUpdate()
         {
             // Always make metal reserves visible in UI if they exist
@@ -501,40 +503,47 @@ namespace MistbornMod.Common.Players
                     Player.AddBuff(buffId, 2);
                 }
             }
-            
+
             UpdateBuffVisibility();
 
             // Handle flare visual effects
-            if (FlareEffectTimer > 0) {
+            if (FlareEffectTimer > 0)
+            {
                 FlareEffectTimer--;
-                
+
                 // Create visual effects around player
-                if (Main.rand.NextBool(3)) {
+                if (Main.rand.NextBool(3))
+                {
                     Vector2 dustVel = Main.rand.NextVector2CircularEdge(2f, 2f);
                     Dust.NewDustPerfect(Player.Center, DustID.Torch, dustVel, 150, default, 0.8f);
                 }
             }
-            
+
             // Regular effect for flaring when active
-            if (IsFlaring && Main.rand.NextBool(10)) {
+            if (IsFlaring && Main.rand.NextBool(10))
+            {
                 Vector2 dustVel = Main.rand.NextVector2CircularEdge(1.5f, 1.5f);
                 Dust.NewDustPerfect(Player.Center, DustID.Torch, dustVel, 150, default, 0.6f);
             }
 
             // --- Handle Toggled Metals (NOT Steel, Iron, or Chromium) ---
             var metalsToCheck = BurningMetals.Keys.ToList();
-            foreach (MetalType metal in metalsToCheck) {
+            foreach (MetalType metal in metalsToCheck)
+            {
                 if (metal == MetalType.Steel || metal == MetalType.Iron || metal == MetalType.Chromium) continue; // Skip held metals
-                
-                if (BurningMetals.TryGetValue(metal, out bool isBurning) && isBurning) {
+
+                if (BurningMetals.TryGetValue(metal, out bool isBurning) && isBurning)
+                {
                     // Try to consume metal reserves
                     bool hasReservesLeft = _reserveManager.ConsumeReserves(metal, IsFlaring);
                     int buffId = GetBuffIDForMetal(metal);
 
-                    if (!hasReservesLeft) { // Ran out this tick
+                    if (!hasReservesLeft)
+                    { // Ran out this tick
                         BurningMetals[metal] = false; // Auto-toggle off
-                        
-                        if (buffId != -1) {
+
+                        if (buffId != -1)
+                        {
                             // Get the ModBuff instance
                             ModBuff modBuff = ModContent.GetModBuff(buffId);
                             if (modBuff is MetalBuff metalBuff)
@@ -543,21 +552,27 @@ namespace MistbornMod.Common.Players
                             }
                             Player.ClearBuff(buffId);
                         }
-                        
+
                         SoundEngine.PlaySound(SoundID.MenuTick, Player.position); // Ran out sound
-                        
+
                         // If we ran out and were flaring, maybe turn off flaring too
-                        if (IsFlaring && !AnyMetalBurning()) {
+                        if (IsFlaring && !AnyMetalBurning())
+                        {
                             IsFlaring = false;
                             Main.NewText("No metals left to flare!", 255, 150, 0);
                         }
-                    } else {
-                         // Keep buff active
-                         if (buffId != -1) Player.AddBuff(buffId, 5);
                     }
-                } else if (Player.HasBuff(GetBuffIDForMetal(metal))) { // Should not be burning but has buff
+                    else
+                    {
+                        // Keep buff active
+                        if (buffId != -1) Player.AddBuff(buffId, 5);
+                    }
+                }
+                else if (Player.HasBuff(GetBuffIDForMetal(metal)))
+                { // Should not be burning but has buff
                     int buffId = GetBuffIDForMetal(metal);
-                    if (buffId != -1) {
+                    if (buffId != -1)
+                    {
                         // Get the ModBuff instance before removing
                         ModBuff modBuff = ModContent.GetModBuff(buffId);
                         if (modBuff is MetalBuff metalBuff)
@@ -571,17 +586,66 @@ namespace MistbornMod.Common.Players
 
             // --- Handle Steel (held) ---
             HandleHeldMetal(MetalType.Steel, IsActivelySteelPushing);
-            
+
             // --- Handle Iron (held) ---
             HandleHeldMetal(MetalType.Iron, IsActivelyIronPulling);
-            
+
             // --- Handle Chromium (held) ---
             HandleHeldMetal(MetalType.Chromium, IsActivelyChromiumStripping);
-            
+
             // If no metals are burning, make sure flaring is turned off
-            if (IsFlaring && !AnyMetalBurning()) {
+            if (IsFlaring && !AnyMetalBurning())
+            {
                 IsFlaring = false;
             }
+            
+             if (EquippedSpike != _previousSpike)
+        {
+            // Spike was unequipped
+            if (_previousSpike != null && EquippedSpike == null)
+            {
+                // Remove the power temporarily
+                if (_previousSpike.PowerUnlocked && HemalurgicPowers.Contains(_previousSpike.TargetMetal))
+                {
+                    HemalurgicPowers.Remove(_previousSpike.TargetMetal);
+                    Main.NewText($"The {_previousSpike.TargetMetal} power fades as the spike is removed...", 255, 150, 100);
+                }
+            }
+            
+            // Spike was equipped
+            if (EquippedSpike != null && _previousSpike == null)
+            {
+                // Visual effect when equipping
+                for (int i = 0; i < 15; i++)
+                {
+                    Dust.NewDust(
+                        Player.position,
+                        Player.width,
+                        Player.height,
+                        DustID.Blood,
+                        Main.rand.NextFloat(-2f, 2f),
+                        Main.rand.NextFloat(-2f, 2f),
+                        100,
+                        default,
+                        1.0f
+                    );
+                }
+                
+                // Show appropriate message
+                if (!EquippedSpike.PowerUnlocked)
+                {
+                    Main.NewText($"The {EquippedSpike.TargetMetal} spike pierces your soul...", 255, 100, 100);
+                    Main.NewText($"Kill {EquippedSpike.RequiredKills - EquippedSpike.CurrentKills} more enemies to unlock its power.", 255, 200, 100);
+                }
+                else
+                {
+                    Main.NewText($"The power of {EquippedSpike.TargetMetal} flows through you!", 100, 255, 100);
+                }
+            }
+            
+            // Update tracking
+            _previousSpike = EquippedSpike;
+        }
         }
         
         // Helper method to check if any metal is burning

@@ -131,14 +131,55 @@ namespace MistbornMod.Content.Items.HemalurgicSpikes
         {
             var modPlayer = player.GetModPlayer<MistbornPlayer>();
             
+            // Track this spike in the player's mod data
+            modPlayer.EquippedSpike = this;
+            
             // If power is unlocked, grant the ability
             if (PowerUnlocked)
             {
                 GrantAllomanticPower(modPlayer);
+                
+                // Visual effect when first equipped (only show once per equip)
+                if (!hideVisual && Main.rand.NextBool(300)) // Rare visual effect
+                {
+                    Dust.NewDust(
+                        player.position,
+                        player.width,
+                        player.height,
+                        DustID.Blood,
+                        Main.rand.NextFloat(-1f, 1f),
+                        Main.rand.NextFloat(-1f, 1f),
+                        100,
+                        default,
+                        0.8f
+                    );
+                }
             }
+        }
+
+        // Override this method to handle equip notifications
+        public override void UpdateEquip(Player player)
+        {
+            // This is called when the item is first equipped
+            var modPlayer = player.GetModPlayer<MistbornPlayer>();
             
-            // Track this spike in the player's mod data
-            modPlayer.EquippedSpike = this;
+            // Notification about the dangerous nature of Hemalurgy
+            if (!PowerUnlocked)
+            {
+                // Only show message occasionally to avoid spam
+                if (Main.rand.NextBool(3600)) // Once per minute on average
+                {
+                    Main.NewText($"The {TargetMetal} spike hungers for {RequiredKills - CurrentKills} more souls...", 255, 100, 100);
+                }
+            }
+            else
+            {
+                // Power is active - show subtle reminder
+                if (Main.rand.NextBool(7200)) // Once per two minutes on average
+                {
+                    Main.NewText($"The stolen power of {TargetMetal} flows through you...", 150, 255, 150);
+                }
+            }
         }
 
         private void GrantAllomanticPower(MistbornPlayer modPlayer)

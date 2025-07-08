@@ -430,3 +430,35 @@ Configs: {
 }
 
 Config.UIVisibilitySettings: Show Title Header
+
+// Add these entries to your Configs section in Localization/en-US_Mods.MistbornMod.hjson
+
+		// NEW: Enhanced Mist Effects Settings
+		EnableMistEffects: {
+			Label: Enable Mist Effects
+			Tooltip: 
+				'''
+				Enable atmospheric mist effects during night time for Mistborn players
+				Disable this if you want better performance or don't like the visual effect
+				'''
+		}
+
+		MistIntensity: {
+			Label: Mist Intensity
+			Tooltip: 
+				'''
+				Controls how intense the mist effects appear
+				Higher values = more visible mist, Lower values = subtle mist
+				Only applies when mist effects are enabled
+				'''
+		}
+
+		MistParticleFrequency: {
+			Label: Mist Particle Frequency
+			Tooltip: 
+				'''
+				Controls how often mist particles spawn
+				Higher values = more particles, Lower values = fewer particles
+				Affects performance - lower values improve FPS
+				'''
+		}

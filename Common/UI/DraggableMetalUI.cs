@@ -869,6 +869,7 @@ namespace MistbornMod.Common.UI
     // Configuration class to store UI settings
     // Updated MetalUIConfig class inside DraggableMetalUI.cs
 
+    // Updated MetalUIConfig class inside DraggableMetalUI.cs
     public class MetalUIConfig : ModConfig
     {
         public override ConfigScope Mode => ConfigScope.ClientSide;
@@ -882,6 +883,7 @@ namespace MistbornMod.Common.UI
 
         [DefaultValue(true)]
         public bool ShowTotalSection { get; set; } = true;
+        
         public float UIScale { get; set; } = 1.0f;
 
         public Vector2 DefaultPosition { get; set; } = new Vector2(855, 0); // Position specified in mod config
@@ -895,6 +897,11 @@ namespace MistbornMod.Common.UI
         // New option to hide button hints
         [DefaultValue(false)]
         public bool HideButtonHints { get; set; } = false;
+
+        [Header("$Mods.MistbornMod.Config.VisualEffectsSettings")]
+        // NEW: Toggle for mist effects
+        [DefaultValue(true)]
+        public bool EnableMistEffects { get; set; } = true;
 
         // Store which metals are unlinked (serialized as string keys for enum compatibility)
         [JsonProperty]

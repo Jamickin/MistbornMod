@@ -1,11 +1,8 @@
-
-
-// Content/NPCs/SteelAnchorPoint.cs
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using MistbornMod.Common.Systems;
 
 namespace MistbornMod.Content.NPCs
 {
@@ -102,45 +99,42 @@ namespace MistbornMod.Content.NPCs
         public override void PostDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
             // Draw a subtle indicator for the player who created it
-            Player owner = Main.player[(int)NPC.ai[0]];
-            if (owner != null && owner.active)
+            if (NPC.ai[0] >= 0 && NPC.ai[0] < Main.maxPlayers)
             {
-                float distance = Vector2.Distance(owner.Center, NPC.Center);
-                if (distance < 500f) // Only show if within reasonable range
+                Player owner = Main.player[(int)NPC.ai[0]];
+                if (owner != null && owner.active)
                 {
-                    // Draw a small crosshair to indicate the anchor point
-                    Vector2 drawPos = NPC.Center - screenPos;
-                    Color indicatorColor = Color.Gray * 0.7f;
-                    
-                    // Draw crosshair lines
-                    for (int i = -2; i <= 2; i++)
+                    float distance = Vector2.Distance(owner.Center, NPC.Center);
+                    if (distance < 500f) // Only show if within reasonable range
                     {
-                        for (int j = -2; j <= 2; j++)
+                        // Draw a small crosshair to indicate the anchor point
+                        Vector2 drawPos = NPC.Center - screenPos;
+                        Color indicatorColor = Color.Gray * 0.7f;
+                        
+                        // Draw crosshair lines
+                        for (int i = -2; i <= 2; i++)
                         {
-                            if (i == 0 || j == 0) // Only draw the cross, not the corners
+                            for (int j = -2; j <= 2; j++)
                             {
-                                spriteBatch.Draw(
-                                    Terraria.GameContent.TextureAssets.MagicPixel.Value,
-                                    drawPos + new Vector2(i, j),
-                                    new Rectangle(0, 0, 1, 1),
-                                    indicatorColor,
-                                    0f,
-                                    Vector2.Zero,
-                                    1f,
-                                    Microsoft.Xna.Framework.Graphics.SpriteEffects.None,
-                                    0f
-                                );
+                                if (i == 0 || j == 0) // Only draw the cross, not the corners
+                                {
+                                    spriteBatch.Draw(
+                                        Terraria.GameContent.TextureAssets.MagicPixel.Value,
+                                        drawPos + new Vector2(i, j),
+                                        new Rectangle(0, 0, 1, 1),
+                                        indicatorColor,
+                                        0f,
+                                        Vector2.Zero,
+                                        1f,
+                                        SpriteEffects.None,
+                                        0f
+                                    );
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-
-        // Make this NPC register as metallic for Steel/Iron detection
-        public override bool IsMetallic()
-        {
-            return true;
         }
     }
 }

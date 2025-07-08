@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using MistbornMod.Common.Players;
+using MistbornMod.Common.UI;
 using System;
 using System.Collections.Generic;
 using Terraria;
@@ -15,7 +16,7 @@ namespace MistbornMod
     public class MistRenderLayer : ModSystem
     {
         private static float mistIntensity = 0f;
-        private const float MAX_MIST_ALPHA = 0.4f; // Maximum opacity of mist
+        private float baseMaxMistAlpha = 0.4f; // Base maximum opacity of mist
         private const float MIST_FADE_SPEED = 0.01f; // Speed at which mist fades in/out
         
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
@@ -47,6 +48,24 @@ namespace MistbornMod
         /// </summary>
         private bool ShouldDrawMist()
         {
+            // Get config instance
+            var config = ModContent.GetInstance<DraggableMetalUI.MetalUIConfig>();
+            
+            // NEW: First check if mist effects are enabled in config
+            if (config != null && !config.EnableMistEffects)
+            {
+                // Mist effects are disabled, fade out any existing mist
+                mistIntensity = Math.Max(0f, mistIntensity - MIST_FADE_SPEED * 2f); // Fade out faster when disabled
+                return mistIntensity > 0f; // Still draw while fading out
+            }
+            
+            // Calculate max mist alpha based on config intensity
+            float maxMistAlpha = baseMaxMistAlpha;
+            if (config != null)
+            {
+                maxMistAlpha = baseMaxMistAlpha * config.MistIntensity;
+            }
+            
             // Check if it's night time
             bool isNight = !Main.dayTime;
             
@@ -73,7 +92,7 @@ namespace MistbornMod
             if (anyMistborn)
             {
                 // Fade in the mist
-                mistIntensity = Math.Min(MAX_MIST_ALPHA, mistIntensity + MIST_FADE_SPEED);
+                mistIntensity = Math.Min(maxMistAlpha, mistIntensity + MIST_FADE_SPEED);
                 return true;
             }
             else
@@ -93,17 +112,25 @@ namespace MistbornMod
         /// </summary>
         private void DrawMistEffects()
         {
+            // Get config for particle frequency
+            var config = ModContent.GetInstance<DraggableMetalUI.MetalUIConfig>();
+            float particleFrequency = config?.MistParticleFrequency ?? 1.0f;
+            
+            // Adjust spawn rate based on config
+            int baseSpawnRate = 40;
+            int adjustedSpawnRate = Math.Max(10, (int)(baseSpawnRate / particleFrequency));
+            
             // Occasionally spawn mist particles for a more dynamic effect
-            if (Main.rand.NextBool(40) && mistIntensity > 0.1f)
+            if (Main.rand.NextBool(adjustedSpawnRate) && mistIntensity > 0.1f)
             {
-                SpawnMistParticle();
+                SpawnMistParticle(config?.MistIntensity ?? 1.0f);
             }
         }
         
         /// <summary>
         /// Spawn a mist particle at a random screen position
         /// </summary>
-        private void SpawnMistParticle()
+        private void SpawnMistParticle(float intensityMultiplier = 1.0f)
         {
             // Calculate a random position on screen
             int x = Main.rand.Next(0, Main.screenWidth);
@@ -112,19 +139,26 @@ namespace MistbornMod
             // Convert screen position to world position
             Vector2 worldPos = Main.screenPosition + new Vector2(x, y);
             
+            // Adjust particle properties based on intensity
+            float baseScale = Main.rand.NextFloat(1.5f, 2.5f);
+            float adjustedScale = baseScale * intensityMultiplier;
+            
+            Color baseColor = new Color(200, 220, 255) * 0.7f;
+            Color adjustedColor = baseColor * intensityMultiplier;
+            
             // Create a dust particle with mist-like properties
             Dust dust = Dust.NewDustPerfect(
                 worldPos,
                 DustID.Cloud,
                 Main.rand.NextVector2Circular(0.5f, 0.5f),
                 100,
-                new Color(200, 220, 255) * 0.7f,
-                Main.rand.NextFloat(1.5f, 2.5f)
+                adjustedColor,
+                adjustedScale
             );
             
             dust.noGravity = true;
             dust.noLight = true;
-            dust.fadeIn = 1.2f;
+            dust.fadeIn = 1.2f * intensityMultiplier;
         }
     }
 }
